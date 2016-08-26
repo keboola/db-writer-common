@@ -1,0 +1,31 @@
+parameters:
+    db:
+        driver: mysql
+        host: 127.0.0.1
+        port: 32768
+        database: wr-db-test
+        user:
+        password:
+
+    tables:
+        -
+            tableId: encoding
+            dbName: encoding
+            export: 1
+            incremental:
+            lastChange:
+            items:
+                -
+                    name: col1
+                    dbName: col1
+                    type: VARCHAR
+                    size: 255
+                    nullable:
+                    default:
+                -
+                    name: col2
+                    dbName: col2
+                    type: VARCHAR
+                    size: 255
+                    nullable:
+                    default:
