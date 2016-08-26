@@ -4,4 +4,3 @@ vendor/
 composer.phar
 runtests.sh
 /ssh.*
-phpunit.sh
