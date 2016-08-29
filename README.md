@@ -1,9 +1,12 @@
 # Database Writer Common [DBWC]
+
+[![Build Status](https://travis-ci.org/keboola/db-writer-common.svg?branch=master)](https://travis-ci.org/keboola/db-writer-common)
+
 ---
 
 Common classes for creating vendor specific database writers.
 
-## Extractors using DBWC
+## Writer using DBWC
 None yet
 
 ## Installation
