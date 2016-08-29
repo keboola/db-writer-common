@@ -12,11 +12,11 @@ interface WriterInterface
     /** @return \PDO */
     function getConnection();
     function createConnection($dbParams);
-    function write($sourceFilename, $outputTableName, $table);
-    function writeAsync($tableId, $outputTableName);
-    function isTableValid(array $table, $ignoreExport = false);
+    function write($sourceFilename, array $table);
+    function isTableValid(array $table);
     function drop($tableName);
     function create(array $table);
+    function upsert(array $table, $targetTable);
     static function getAllowedTypes();
     function isAsync();
 }

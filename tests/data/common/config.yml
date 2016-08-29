@@ -1,19 +1,19 @@
 parameters:
     db:
         driver: mysql
-        host: 127.0.0.1
-        port: 32768
-        database: wr-db-test
-        user:
+        host: mysql
+        port: 3306
+        database: dbtest
+        user: root
         password:
 
     tables:
         -
             tableId: encoding
             dbName: encoding
-            export: 1
-            incremental:
-            lastChange:
+            export: true
+            incremental: false
+            primaryKey: []
             items:
                 -
                     name: col1
@@ -27,5 +27,34 @@ parameters:
                     dbName: col2
                     type: VARCHAR
                     size: 255
+                    nullable:
+                    default:
+
+        -
+            tableId: simple
+            dbName: simple
+            export: true
+            incremental: true
+            primaryKey: [id]
+            items:
+                -
+                    name: id
+                    dbName: id
+                    type: int
+                    size:
+                    nullable:
+                    default:
+                -
+                    name: name
+                    dbName: name
+                    type: VARCHAR
+                    size: 255
+                    nullable:
+                    default:
+                -
+                    name: glasses
+                    dbName: glasses
+                    type: VARCHAR
+                    size: 20
                     nullable:
                     default:

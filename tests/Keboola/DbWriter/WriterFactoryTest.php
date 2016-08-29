@@ -11,6 +11,8 @@ class WriterFactoryTest extends \Keboola\DbWriter\Test\BaseTest
     public function testCreate()
     {
         $config = $this->getConfig('common');
+        $config['parameters']['writer_class'] = 'Common';
+
         $writerFactory = new \Keboola\DbWriter\WriterFactory($config['parameters']);
         $writer = $writerFactory->create(new \Keboola\DbWriter\Logger());
 

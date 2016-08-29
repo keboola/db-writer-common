@@ -34,12 +34,12 @@ class Application extends Container
             return new Logger(APP_NAME);
         };
 
-        $this['extractor_factory'] = function() use ($app) {
-            return new ExtractorFactory($app['parameters']);
+        $this['writer_factory'] = function() use ($app) {
+            return new WriterFactory($app['parameters']);
         };
 
-        $this['extractor'] = function() use ($app) {
-            return $app['extractor_factory']->create($app['logger']);
+        $this['writer'] = function() use ($app) {
+            return $app['writer_factory']->create($app['logger']);
         };
 
         $this->configDefinition = new ConfigDefinition();
@@ -83,18 +83,40 @@ class Application extends Container
 
     private function runAction()
     {
-        $imported = [];
+        $uploaded = [];
         $tables = array_filter($this['parameters']['tables'], function ($table) {
-            return ($table['enabled']);
+            return ($table['export']);
         });
 
+        $writer = $this['writer'];
         foreach ($tables as $table) {
-            $imported[] = $this['extractor']->export($table);
+            if (!$writer->isTableValid($table)) {
+                continue;
+            }
+
+            $sourceFilename = $this['parameters']['data_dir'] . "/in/tables/" . $table['tableId'] . ".csv";
+
+            $targetTable = $table['dbName'];
+            $table['dbName'] .= $table['incremental']?'_temp_' . uniqid():'';
+
+            try {
+                $writer->drop($table['dbName']);
+                $writer->create($table);
+                $writer->write($sourceFilename, $table);
+
+                if ($table['incremental']) {
+                    $writer->upsert($table, $targetTable);
+                }
+            } catch (\Exception $e) {
+                throw new UserException($e->getMessage(), 400, $e);
+            }
+
+            $uploaded[] = $table['tableId'];
         }
 
         return [
             'status' => 'success',
-            'imported' => $imported
+            'uploaded' => $uploaded
         ];
     }
 

@@ -30,7 +30,7 @@ class WriterFactory
             throw new UserException(sprintf("Writer class '%s' doesn't exist", $writerClass));
         }
 
-        return new $writerClass($this->parameters, $logger);
+        return new $writerClass($this->parameters['db'], $logger);
     }
 
 }
