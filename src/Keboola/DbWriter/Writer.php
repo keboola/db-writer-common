@@ -16,8 +16,13 @@ abstract class Writer implements WriterInterface
 
     protected $async = false;
 
-    public function __construct($dbParams)
+    /** @var Logger */
+    protected $logger;
+
+    public function __construct($dbParams, Logger $logger)
     {
+        $this->logger = $logger;
+
         try {
             $this->db = $this->createConnection($dbParams);
         } catch (\Exception $e) {
