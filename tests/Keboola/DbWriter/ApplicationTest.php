@@ -17,7 +17,7 @@ class ApplicationTest extends BaseTest
     public function setUp()
     {
         parent::setUp();
-        $this->config = $this->getConfig('mssql');
+        $this->config = $this->getConfig('common');
     }
 
     public function testRun()
@@ -45,7 +45,7 @@ class ApplicationTest extends BaseTest
     protected function runApp(Application $app)
     {
         $result = $app->run();
-        $expectedCsvFile = ROOT_PATH . '/tests/data/escaping.csv';
+        $expectedCsvFile = ROOT_PATH . '/tests/data/encoding.csv';
         $outputCsvFile = $this->dataDir . '/out/tables/' . $result['imported'][0] . '.csv';
         $outputManifestFile = $this->dataDir . '/out/tables/' . $result['imported'][0] . '.csv.manifest';
 
