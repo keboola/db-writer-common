@@ -157,13 +157,4 @@ class CommonTest extends BaseTest
             'char', 'varchar', 'text', 'blob'
         ], $allowedTypes);
     }
-
-    protected function getConfig($driver)
-    {
-        $config = parent::getConfig($driver);
-        $config['parameters']['writer_class'] = 'Common';
-
-        return $config;
-    }
-
 }

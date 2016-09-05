@@ -1,4 +1,5 @@
 parameters:
+    writer_class: Common
     db:
         driver: mysql
         host: mysql
