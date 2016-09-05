@@ -123,7 +123,7 @@ class Application extends Container
     private function testConnectionAction()
     {
         try {
-            $this['extractor']->testConnection();
+            $this['writer']->testConnection();
         } catch (\Exception $e) {
             throw new UserException(sprintf("Connection failed: '%s'", $e->getMessage()), 0, $e);
         }
