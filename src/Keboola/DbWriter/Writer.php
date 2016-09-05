@@ -9,6 +9,7 @@ namespace Keboola\DbWriter;
 
 use Keboola\DbWriter\Exception\ApplicationException;
 use Keboola\DbWriter\Exception\UserException;
+use Keboola\SSHTunnel\SSH;
 
 abstract class Writer implements WriterInterface
 {
@@ -23,6 +24,10 @@ abstract class Writer implements WriterInterface
     {
         $this->logger = $logger;
 
+        if (isset($parameters['db']['ssh']['enabled']) && $parameters['db']['ssh']['enabled']) {
+            $parameters['db'] = $this->createSshTunnel($parameters['db']);
+        }
+
         try {
             $this->db = $this->createConnection($dbParams);
         } catch (\Exception $e) {
@@ -31,6 +36,44 @@ abstract class Writer implements WriterInterface
             }
             throw new UserException("Error connecting to DB: " . $e->getMessage(), 0, $e);
         }
+    }
+
+    public function createSshTunnel($dbConfig)
+    {
+        $sshConfig = $dbConfig['ssh'];
+
+        // check params
+        foreach (['keys', 'sshHost'] as $k) {
+            if (empty($sshConfig[$k])) {
+                throw new UserException(sprintf("Parameter %s is missing.", $k));
+            }
+        }
+
+        if (empty($sshConfig['user'])) {
+            $sshConfig['user'] = $dbConfig['user'];
+        }
+
+        if (empty($sshConfig['remoteHost'])) {
+            $sshConfig['remoteHost'] = $dbConfig['host'];
+        }
+
+        if (empty($sshConfig['remotePort'])) {
+            $sshConfig['remotePort'] = $dbConfig['port'];
+        }
+
+        $sshConfig['privateKey'] = isset($sshConfig['keys']['#private'])
+            ?$sshConfig['keys']['#private']
+            :$sshConfig['keys']['private'];
+
+        $ssh = new SSH();
+        $ssh->openTunnel(array_intersect_key($sshConfig, [
+            'user', 'sshHost', 'sshPort', 'localPort', 'remoteHost', 'remotePort', 'privateKey'
+        ]));
+
+        $dbConfig['host'] = '127.0.0.1';
+        $dbConfig['port'] = $sshConfig['localPort'];
+
+        return $dbConfig;
     }
 
     public function getConnection()

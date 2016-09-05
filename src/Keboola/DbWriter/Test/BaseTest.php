@@ -52,6 +52,6 @@ class BaseTest extends \PHPUnit_Framework_TestCase
     {
         $writerFactory = new WriterFactory($parameters);
 
-        return $writerFactory->create(new Logger());
+        return $writerFactory->create(new Logger(APP_NAME));
     }
 }

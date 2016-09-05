@@ -25,23 +25,17 @@ class Application extends Container
         parent::__construct();
 
         $app = $this;
-
         $this['action'] = isset($config['action'])?$config['action']:'run';
-
         $this['parameters'] = $config['parameters'];
-
         $this['logger'] = function() use ($app) {
             return new Logger(APP_NAME);
         };
-
         $this['writer_factory'] = function() use ($app) {
             return new WriterFactory($app['parameters']);
         };
-
         $this['writer'] = function() use ($app) {
             return $app['writer_factory']->create($app['logger']);
         };
-
         $this->configDefinition = new ConfigDefinition();
     }
 
