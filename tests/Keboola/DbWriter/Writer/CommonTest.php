@@ -91,7 +91,7 @@ class CommonTest extends BaseTest
         $tables = $this->config['parameters']['tables'];
 
         $table = $tables[0];
-        $sourceFilename = $this->dataDir . "/" . $table['tableId'] . ".csv";
+        $sourceFilename = $this->dataDir . "/in/tables/" . $table['tableId'] . ".csv";
         $table['dbName'] .= $table['incremental']?'_temp_' . uniqid():'';
 
         $this->writer->create($table);
@@ -117,7 +117,7 @@ class CommonTest extends BaseTest
         $tables = $this->config['parameters']['tables'];
 
         $table = $tables[1];
-        $sourceFilename = $this->dataDir . "/" . $table['tableId'] . ".csv";
+        $sourceFilename = $this->dataDir . "/in/tables/" . $table['tableId'] . ".csv";
         $targetTable = $table;
         $table['dbName'] .= $table['incremental']?'_temp_' . uniqid():'';
 
@@ -126,7 +126,7 @@ class CommonTest extends BaseTest
         $this->writer->write($sourceFilename, $targetTable);
 
         // second write
-        $sourceFilename = $this->dataDir . "/" . $table['tableId'] . "_increment.csv";
+        $sourceFilename = $this->dataDir . "/in/tables/" . $table['tableId'] . "_increment.csv";
         $this->writer->create($table);
         $this->writer->write($sourceFilename, $table);
         $this->writer->upsert($table, $targetTable['dbName']);
@@ -141,7 +141,7 @@ class CommonTest extends BaseTest
             $csv->writeRow($row);
         }
 
-        $expectedFilename = $this->dataDir . "/" . $table['tableId'] . "_merged.csv";
+        $expectedFilename = $this->dataDir . "/in/tables/" . $table['tableId'] . "_merged.csv";
 
         $this->assertFileEquals($expectedFilename, $resFilename);
     }
