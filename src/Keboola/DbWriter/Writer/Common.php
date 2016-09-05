@@ -110,43 +110,49 @@ class Common extends Writer implements WriterInterface
 
     public function upsert(array $table, $targetTable)
     {
-        if (empty($table['primaryKey'])) {
-            throw new UserException("Primary Key must be set for incremental write");
-        }
-
         $sourceTable = $table['dbName'];
 
-        // update data
-        $joinClauseArr = [];
-        foreach ($table['primaryKey'] as $index => $value) {
-            $joinClauseArr[] = "a.`{$value}`=b.`{$value}`";
+        // create target table if not exists
+        if (!$this->tableExists($targetTable)) {
+            $destinationTable = $table;
+            $destinationTable['dbName'] = $targetTable;
+            $this->create($destinationTable);
         }
-        $joinClause = implode(' AND ', $joinClauseArr);
 
         $columns = array_map(function($item) {
             return $item['dbName'];
         }, $table['items']);
 
-        $valuesClauseArr = [];
-        foreach ($columns as $index => $column) {
-            $valuesClauseArr[] = "a.`{$column}`=b.`{$column}`";
+        if (!empty($table['primaryKey'])) {
+            // update data
+            $joinClauseArr = [];
+            foreach ($table['primaryKey'] as $index => $value) {
+                $joinClauseArr[] = "a.`{$value}`=b.`{$value}`";
+            }
+            $joinClause = implode(' AND ', $joinClauseArr);
+
+            $valuesClauseArr = [];
+            foreach ($columns as $index => $column) {
+                $valuesClauseArr[] = "a.`{$column}`=b.`{$column}`";
+            }
+            $valuesClause = implode(',', $valuesClauseArr);
+
+            $query = "UPDATE `{$targetTable}` a
+                INNER JOIN `{$sourceTable}` b ON {$joinClause}
+                SET {$valuesClause}
+            ";
+            $this->db->exec($query);
+
+            // delete updated from temp table
+            $query = "DELETE a.* FROM `{$sourceTable}` a
+                INNER JOIN `{$targetTable}` b ON {$joinClause}
+            ";
+            $this->db->exec($query);
         }
-        $valuesClause = implode(',', $valuesClauseArr);
-
-        $query = "UPDATE `{$targetTable}` a
-            INNER JOIN `{$sourceTable}` b ON {$joinClause}
-            SET {$valuesClause}
-        ";
-        $this->db->exec($query);
-
-        // delete updated from temp table
-        $query = "DELETE a.* FROM `{$sourceTable}` a
-            INNER JOIN `{$targetTable}` b ON {$joinClause}
-        ";
-        $this->db->exec($query);
 
         // insert new data
-        $query = "INSERT INTO `{$targetTable}` SELECT * FROM `{$sourceTable}`";
+        $columnsClause = implode(',', $columns);
+        $query = "INSERT INTO `{$targetTable}` ({$columnsClause}) SELECT * FROM `{$sourceTable}`";
         $this->db->exec($query);
     }
 
@@ -180,6 +186,16 @@ class Common extends Writer implements WriterInterface
         }
 
         return true;
+    }
+
+    private function tableExists($tableName)
+    {
+        $tableArr = explode('.', $tableName);
+        $tableName = isset($tableArr[1])?$tableArr[1]:$tableArr[0];
+        $tableName = str_replace(['[',']'], '', $tableName);
+        $stmt = $this->db->query(sprintf("SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '%s'", $tableName));
+        $res = $stmt->fetchAll();
+        return !empty($res);
     }
 
     protected function getPlaceholders(array $row)
