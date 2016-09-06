@@ -8,7 +8,9 @@
 
 namespace Keboola\DbWriter;
 
+use Keboola\Csv\CsvFile;
 use Keboola\DbWriter\Test\BaseTest;
+use Keboola\DbWriter\Writer\Common;
 
 class ApplicationTest extends BaseTest
 {
@@ -45,13 +47,27 @@ class ApplicationTest extends BaseTest
     protected function runApp(Application $app)
     {
         $result = $app->run();
-        $expectedCsvFile = $this->dataDir . '/in/tables/encoding.csv';
-        $outputCsvFile = $this->dataDir . '/out/tables/' . $result['imported'][0] . '.csv';
-        $outputManifestFile = $this->dataDir . '/out/tables/' . $result['imported'][0] . '.csv.manifest';
+
+        $encodingIn = $this->dataDir . '/in/tables/encoding.csv';
+        $encodingOut = $this->dbTableToCsv($app['writer']->getConnection(), 'encoding', ['col1', 'col2']);
 
         $this->assertEquals('success', $result['status']);
-        $this->assertFileExists($outputCsvFile);
-        $this->assertFileExists($outputManifestFile);
-        $this->assertEquals(file_get_contents($expectedCsvFile), file_get_contents($outputCsvFile));
+        $this->assertFileExists($encodingOut->getPathname());
+        $this->assertEquals(file_get_contents($encodingIn), file_get_contents($encodingOut));
+    }
+
+    protected function dbTableToCsv(\PDO $conn, $tableName, $header)
+    {
+        $stmt = $conn->query("SELECT * FROM {$tableName}");
+        $res = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+        $resFilename = tempnam('/tmp', 'db-wr-test-tmp');
+        $csv = new CsvFile($resFilename);
+        $csv->writeRow($header);
+        foreach ($res as $row) {
+            $csv->writeRow($row);
+        }
+
+        return $csv;
     }
 }
