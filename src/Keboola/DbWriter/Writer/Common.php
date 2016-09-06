@@ -217,4 +217,20 @@ class Common extends Writer implements WriterInterface
     {
         return static::$allowedTypes;
     }
+
+    public function showTables($dbName)
+    {
+        $stmt = $this->db->query("SHOW TABLES");
+        $res = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+        return array_map(function ($item) {
+            return array_shift($item);
+        }, $res);
+    }
+
+    public function getTableInfo($tableName)
+    {
+        $stmt = $this->db->query("DESCRIBE {$tableName}");
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
 }

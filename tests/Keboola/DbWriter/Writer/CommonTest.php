@@ -157,4 +157,27 @@ class CommonTest extends BaseTest
             'char', 'varchar', 'text', 'blob'
         ], $allowedTypes);
     }
+
+    public function testShowTables()
+    {
+        foreach ($this->config['parameters']['tables'] as $table) {
+            $this->writer->create($table);
+        }
+        $tables = $this->writer->showTables($this->config['parameters']['db']['database']);
+
+        foreach ($this->config['parameters']['tables'] as $table) {
+            $this->assertContains($table['dbName'], $tables);
+        }
+    }
+
+    public function testGetTableInfo()
+    {
+        $table = $this->config['parameters']['tables'][0];
+        $this->writer->create($table);
+
+        $tableInfo = $this->writer->getTableInfo($table['dbName']);
+
+        $this->assertEquals('col1', $tableInfo[0]['Field']);
+        $this->assertEquals('varchar(255)', $tableInfo[0]['Type']);
+    }
 }
