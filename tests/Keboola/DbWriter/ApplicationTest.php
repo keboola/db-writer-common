@@ -43,6 +43,15 @@ class ApplicationTest extends BaseTest
         $this->runApp(new Application($config));
     }
 
+    public function testGetTablesInfo()
+    {
+        $config = $this->config;
+        $config['action'] = 'getTablesInfo';
+        $result = (new Application($config))->run();
+
+        $this->assertContains('encoding', array_keys($result['tables']));
+    }
+
     protected function runApp(Application $app)
     {
         $result = $app->run();

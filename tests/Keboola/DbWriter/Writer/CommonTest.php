@@ -29,11 +29,10 @@ class CommonTest extends BaseTest
         $this->writer = $this->getWriter($this->config['parameters']);
         $conn = $this->writer->getConnection();
 
-        $tables = $this->config['parameters']['tables'];
+        $tables = $this->writer->showTables($this->config['parameters']['db']['database']);
 
-        foreach ($tables as $table) {
-            $conn->exec("DROP TABLE IF EXISTS " . $table['dbName']);
-            $conn->exec("DROP TABLE IF EXISTS " . $table['dbName'] . "_temp");
+        foreach ($tables as $tableName) {
+            $res = $conn->exec("DROP TABLE IF EXISTS {$tableName}");
         }
     }
 

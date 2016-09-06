@@ -75,7 +75,7 @@ class Application extends Container
         }
     }
 
-    private function runAction()
+    public function runAction()
     {
         $uploaded = [];
         $tables = array_filter($this['parameters']['tables'], function ($table) {
@@ -114,7 +114,7 @@ class Application extends Container
         ];
     }
 
-    private function testConnectionAction()
+    public function testConnectionAction()
     {
         try {
             $this['writer']->testConnection();
@@ -124,6 +124,21 @@ class Application extends Container
 
         return [
             'status' => 'success',
+        ];
+    }
+
+    public function getTablesInfoAction()
+    {
+        $tables = $this['writer']->showTables($this['parameters']['db']['database']);
+
+        $tablesInfo = [];
+        foreach ($tables as $tableName) {
+            $tablesInfo[$tableName] = $this['writer']->getTableInfo($tableName);
+        }
+
+        return [
+            'status' => 'success',
+            'tables' => $tablesInfo
         ];
     }
 }
