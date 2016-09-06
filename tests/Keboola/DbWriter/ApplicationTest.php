@@ -10,7 +10,6 @@ namespace Keboola\DbWriter;
 
 use Keboola\Csv\CsvFile;
 use Keboola\DbWriter\Test\BaseTest;
-use Keboola\DbWriter\Writer\Common;
 
 class ApplicationTest extends BaseTest
 {

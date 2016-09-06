@@ -93,5 +93,4 @@ abstract class Writer implements WriterInterface
     {
         throw new ApplicationException("Not implemented.");
     }
-
 }
