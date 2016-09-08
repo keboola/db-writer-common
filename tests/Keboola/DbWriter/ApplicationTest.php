@@ -10,6 +10,7 @@ namespace Keboola\DbWriter;
 
 use Keboola\Csv\CsvFile;
 use Keboola\DbWriter\Test\BaseTest;
+use Monolog\Handler\TestHandler;
 
 class ApplicationTest extends BaseTest
 {
@@ -23,11 +24,17 @@ class ApplicationTest extends BaseTest
 
     public function testRun()
     {
-        $this->runApp(new Application($this->config));
+        $this->runApp(new Application($this->config, new Logger(APP_NAME)));
     }
 
     public function testRunWithSSH()
     {
+        $testHandler = new TestHandler();
+
+        $logger = new Logger(APP_NAME);
+        $logger->setHandlers([$testHandler]);
+
+
         $config = $this->config;
         $config['parameters']['db']['ssh'] = [
             'enabled' => true,
@@ -40,14 +47,25 @@ class ApplicationTest extends BaseTest
             'remoteHost' => 'mysql',
             'remotePort' => '3306',
         ];
-        $this->runApp(new Application($config));
+        $this->runApp(new Application($config, $logger));
+
+        $records = $testHandler->getRecords();
+        $record = reset($records);
+
+        $this->assertCount(1, $testHandler->getRecords());
+
+        $this->assertArrayHasKey('message', $record);
+        $this->assertArrayHasKey('level', $record);
+
+        $this->assertEquals(Logger::INFO, $record['level']);
+        $this->assertRegExp('/Creating SSH tunnel/ui', $record['message']);
     }
 
     public function testGetTablesInfo()
     {
         $config = $this->config;
         $config['action'] = 'getTablesInfo';
-        $result = (new Application($config))->run();
+        $result = (new Application($config, new Logger(APP_NAME)))->run();
 
         $this->assertContains('encoding', array_keys($result['tables']));
     }

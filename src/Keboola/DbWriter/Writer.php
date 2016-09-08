@@ -24,8 +24,8 @@ abstract class Writer implements WriterInterface
     {
         $this->logger = $logger;
 
-        if (isset($parameters['db']['ssh']['enabled']) && $parameters['db']['ssh']['enabled']) {
-            $parameters['db'] = $this->createSshTunnel($parameters['db']);
+        if (isset($dbParams['ssh']['enabled']) && $dbParams['ssh']['enabled']) {
+            $dbParams = $this->createSshTunnel($dbParams);
         }
 
         try {
@@ -61,14 +61,22 @@ abstract class Writer implements WriterInterface
             $sshConfig['remotePort'] = $dbConfig['port'];
         }
 
+        if (empty($sshConfig['sshPort'])) {
+            $sshConfig['sshPort'] = 22;
+        }
+
         $sshConfig['privateKey'] = isset($sshConfig['keys']['#private'])
             ?$sshConfig['keys']['#private']
             :$sshConfig['keys']['private'];
 
-        $ssh = new SSH();
-        $ssh->openTunnel(array_intersect_key($sshConfig, [
+        $tunnelParams = array_intersect_key($sshConfig, array_flip([
             'user', 'sshHost', 'sshPort', 'localPort', 'remoteHost', 'remotePort', 'privateKey'
         ]));
+
+        $this->logger->info("Creating SSH tunnel to '" . $tunnelParams['sshHost'] . "'");
+
+        $ssh = new SSH();
+        $ssh->openTunnel($tunnelParams);
 
         $dbConfig['host'] = '127.0.0.1';
         $dbConfig['port'] = $sshConfig['localPort'];

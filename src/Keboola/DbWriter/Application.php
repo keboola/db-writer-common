@@ -20,15 +20,15 @@ class Application extends Container
 {
     private $configDefinition;
 
-    public function __construct($config)
+    public function __construct($config, Logger $logger)
     {
         parent::__construct();
 
         $app = $this;
         $this['action'] = isset($config['action'])?$config['action']:'run';
         $this['parameters'] = $config['parameters'];
-        $this['logger'] = function() use ($app) {
-            return new Logger(APP_NAME);
+        $this['logger'] = function() use ($logger) {
+            return $logger;
         };
         $this['writer_factory'] = function() use ($app) {
             return new WriterFactory($app['parameters']);
