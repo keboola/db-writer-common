@@ -94,7 +94,7 @@ class CommonTest extends BaseTest
         $table['dbName'] .= $table['incremental']?'_temp_' . uniqid():'';
 
         $this->writer->create($table);
-        $this->writer->write($sourceFilename, $table);
+        $this->writer->write(new CsvFile($sourceFilename), $table);
 
         $conn = $this->writer->getConnection();
         $stmt = $conn->query("SELECT * FROM {$table['dbName']}");
@@ -122,12 +122,12 @@ class CommonTest extends BaseTest
 
         // first write
         $this->writer->create($targetTable);
-        $this->writer->write($sourceFilename, $targetTable);
+        $this->writer->write(new CsvFile($sourceFilename), $targetTable);
 
         // second write
         $sourceFilename = $this->dataDir . "/in/tables/" . $table['tableId'] . "_increment.csv";
         $this->writer->create($table);
-        $this->writer->write($sourceFilename, $table);
+        $this->writer->write(new CsvFile($sourceFilename), $table);
         $this->writer->upsert($table, $targetTable['dbName']);
 
         $stmt = $conn->query("SELECT * FROM {$targetTable['dbName']}");

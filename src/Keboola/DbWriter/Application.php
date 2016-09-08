@@ -9,6 +9,7 @@
 
 namespace Keboola\DbWriter;
 
+use Keboola\Csv\CsvFile;
 use Keboola\DbWriter\Configuration\ConfigDefinition;
 use Keboola\DbWriter\Exception\UserException;
 use Pimple\Container;
@@ -88,18 +89,25 @@ class Application extends Container
                 continue;
             }
 
-            $sourceFilename = $this['parameters']['data_dir'] . "/in/tables/" . $table['tableId'] . ".csv";
+            $csv = $this->getInputCsv($table['tableId']);
 
-            $targetTable = $table['dbName'];
+            $targetTableName = $table['dbName'];
             $table['dbName'] .= $table['incremental']?'_temp_' . uniqid():'';
+            $table['items'] = $this->reorderColumns($csv, $table['items']);
 
             try {
                 $writer->drop($table['dbName']);
                 $writer->create($table);
-                $writer->write($sourceFilename, $table);
+                $writer->write($csv, $table);
 
                 if ($table['incremental']) {
-                    $writer->upsert($table, $targetTable);
+                    // create target table if not exists
+                    if (!$writer->tableExists($targetTableName)) {
+                        $destinationTable = $table;
+                        $destinationTable['dbName'] = $targetTableName;
+                        $writer->create($destinationTable);
+                    }
+                    $writer->upsert($table, $targetTableName);
                 }
             } catch (\Exception $e) {
                 throw new UserException($e->getMessage(), 400, $e);
@@ -112,6 +120,29 @@ class Application extends Container
             'status' => 'success',
             'uploaded' => $uploaded
         ];
+    }
+
+    private function reorderColumns(CsvFile $csv, $items)
+    {
+        $csv->next();
+        $csvHeader = $csv->current();
+        $csv->rewind();
+
+        $reordered = [];
+        foreach ($csvHeader as $csvCol) {
+            foreach ($items as $item) {
+                if ($csvCol == $item['name']) {
+                    $reordered[] = $item;
+                }
+            }
+        }
+
+        return $reordered;
+    }
+
+    private function getInputCsv($tableId)
+    {
+        return new CsvFile($this['parameters']['data_dir'] . "/in/tables/" . $tableId . ".csv");
     }
 
     public function testConnectionAction()
