@@ -70,7 +70,7 @@ class ApplicationTest extends BaseTest
         $simpleTableCfg['items'][1] = $firstCol;
         $this->config['parameters']['tables'][1] = $simpleTableCfg;
 
-        $this->runApp(new Application($this->config));
+        $this->runApp(new Application($this->config, new Logger(APP_NAME)));
     }
 
     public function testGetTablesInfo()
