@@ -61,6 +61,18 @@ class ApplicationTest extends BaseTest
         $this->assertRegExp('/Creating SSH tunnel/ui', $record['message']);
     }
 
+    public function testRunReorderColumns()
+    {
+        $simpleTableCfg = $this->config['parameters']['tables'][1];
+        $firstCol = $simpleTableCfg['items'][0];
+        $secondCol = $simpleTableCfg['items'][1];
+        $simpleTableCfg['items'][0] = $secondCol;
+        $simpleTableCfg['items'][1] = $firstCol;
+        $this->config['parameters']['tables'][1] = $simpleTableCfg;
+
+        $this->runApp(new Application($this->config));
+    }
+
     public function testGetTablesInfo()
     {
         $config = $this->config;

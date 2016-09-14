@@ -8,6 +8,7 @@
 
 namespace Keboola\DbWriter\Writer;
 
+use Keboola\Csv\CsvFile;
 use Keboola\DbWriter\Exception\UserException;
 use Keboola\DbWriter\Writer;
 use Keboola\DbWriter\WriterInterface;
@@ -87,10 +88,10 @@ class Common extends Writer implements WriterInterface
         $this->db->exec($sql);
     }
 
-    public function write($sourceFilename, array $table)
+    public function write(CsvFile $csvFile, array $table)
     {
         $query = "
-            LOAD DATA LOCAL INFILE '{$sourceFilename}'
+            LOAD DATA LOCAL INFILE '{$csvFile->getPathname()}'
             INTO TABLE `{$table['dbName']}`
             CHARACTER SET utf8
             FIELDS TERMINATED BY ','
@@ -188,7 +189,7 @@ class Common extends Writer implements WriterInterface
         return true;
     }
 
-    private function tableExists($tableName)
+    public function tableExists($tableName)
     {
         $tableArr = explode('.', $tableName);
         $tableName = isset($tableArr[1])?$tableArr[1]:$tableArr[0];
