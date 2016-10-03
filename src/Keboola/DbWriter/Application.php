@@ -21,13 +21,18 @@ class Application extends Container
 {
     private $configDefinition;
 
-    public function __construct($config)
+    public function __construct($config, $configDefinition = null)
     {
         parent::__construct();
 
         $app = $this;
+
+        if ($configDefinition == null) {
+            $this->configDefinition = new ConfigDefinition();
+        }
+
         $this['action'] = isset($config['action'])?$config['action']:'run';
-        $this['parameters'] = $config['parameters'];
+        $this['parameters'] = $this->validateParameters($config['parameters']);
         $this['logger'] = function() use ($app) {
             return new Logger(APP_NAME);
         };
@@ -37,13 +42,10 @@ class Application extends Container
         $this['writer'] = function() use ($app) {
             return $app['writer_factory']->create($app['logger']);
         };
-        $this->configDefinition = new ConfigDefinition();
     }
 
     public function run()
     {
-        $this['parameters'] = $this->validateParameters($this['parameters']);
-
         $actionMethod = $this['action'] . 'Action';
         if (!method_exists($this, $actionMethod)) {
             throw new UserException(sprintf("Action '%s' does not exist.", $this['action']));
@@ -52,6 +54,10 @@ class Application extends Container
         return $this->$actionMethod();
     }
 
+    /**
+     * @deprecated use constructor argument instead
+     * @param ConfigurationInterface $definition
+     */
     public function setConfigDefinition(ConfigurationInterface $definition)
     {
         $this->configDefinition = $definition;
