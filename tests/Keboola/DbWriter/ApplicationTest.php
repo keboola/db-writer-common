@@ -9,6 +9,8 @@
 namespace Keboola\DbWriter;
 
 use Keboola\Csv\CsvFile;
+use Keboola\DbWriter\Configuration\ConfigDefinition;
+use Keboola\DbWriter\Configuration\Validator;
 use Keboola\DbWriter\Test\BaseTest;
 use Monolog\Handler\TestHandler;
 
@@ -19,7 +21,16 @@ class ApplicationTest extends BaseTest
     public function setUp()
     {
         parent::setUp();
-        $this->config = $this->getConfig('common');
+        $validate = Validator::getValidator(new ConfigDefinition());
+        $this->config['parameters'] = $validate($this->getConfig('common')['parameters']);
+
+        $writer = $this->getWriter($this->config['parameters']);
+        $conn = $writer->getConnection();
+        $tables = $writer->showTables($this->config['parameters']['db']['database']);
+
+        foreach ($tables as $tableName) {
+            $conn->exec("DROP TABLE IF EXISTS {$tableName}");
+        }
     }
 
     public function testRun()
@@ -47,6 +58,7 @@ class ApplicationTest extends BaseTest
             'remoteHost' => 'mysql',
             'remotePort' => '3306',
         ];
+
         $this->runApp(new Application($config, $logger));
 
         $records = $testHandler->getRecords();

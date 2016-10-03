@@ -65,9 +65,9 @@ abstract class Writer implements WriterInterface
             $sshConfig['sshPort'] = 22;
         }
 
-        $sshConfig['privateKey'] = isset($sshConfig['keys']['#private'])
-            ?$sshConfig['keys']['#private']
-            :$sshConfig['keys']['private'];
+        $sshConfig['privateKey'] = empty($sshConfig['keys']['#private'])
+            ?$sshConfig['keys']['private']
+            :$sshConfig['keys']['#private'];
 
         $tunnelParams = array_intersect_key($sshConfig, array_flip([
             'user', 'sshHost', 'sshPort', 'localPort', 'remoteHost', 'remotePort', 'privateKey'

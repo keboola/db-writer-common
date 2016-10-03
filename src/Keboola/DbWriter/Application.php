@@ -11,16 +11,12 @@ namespace Keboola\DbWriter;
 
 use Keboola\Csv\CsvFile;
 use Keboola\DbWriter\Configuration\ConfigDefinition;
+use Keboola\DbWriter\Configuration\Validator;
 use Keboola\DbWriter\Exception\UserException;
 use Pimple\Container;
-use Symfony\Component\Config\Definition\ConfigurationInterface;
-use Symfony\Component\Config\Definition\Exception\Exception as ConfigException;
-use Symfony\Component\Config\Definition\Processor;
 
 class Application extends Container
 {
-    private $configDefinition;
-
     public function __construct($config, Logger $logger, $configDefinition = null)
     {
         parent::__construct();
@@ -30,10 +26,10 @@ class Application extends Container
         if ($configDefinition == null) {
             $configDefinition = new ConfigDefinition();
         }
-        $this->configDefinition = $configDefinition;
+        $validate = Validator::getValidator($configDefinition);
 
         $this['action'] = isset($config['action'])?$config['action']:'run';
-        $this['parameters'] = $this->validateParameters($config['parameters']);
+        $this['parameters'] = $validate($config['parameters']);
         $this['logger'] = $logger;
         $this['writer_factory'] = function() use ($app) {
             return new WriterFactory($app['parameters']);
@@ -51,34 +47,6 @@ class Application extends Container
         }
 
         return $this->$actionMethod();
-    }
-
-    /**
-     * @deprecated use constructor argument instead
-     * @param ConfigurationInterface $definition
-     */
-    public function setConfigDefinition(ConfigurationInterface $definition)
-    {
-        $this->configDefinition = $definition;
-    }
-
-    private function validateParameters($parameters)
-    {
-        try {
-            $processor = new Processor();
-            $processedParameters = $processor->processConfiguration(
-                $this->configDefinition,
-                [$parameters]
-            );
-
-            if (!empty($processedParameters['db']['#password'])) {
-                $processedParameters['db']['password'] = $processedParameters['db']['#password'];
-            }
-
-            return $processedParameters;
-        } catch (ConfigException $e) {
-            throw new UserException($e->getMessage(), 0, $e);
-        }
     }
 
     public function runAction()

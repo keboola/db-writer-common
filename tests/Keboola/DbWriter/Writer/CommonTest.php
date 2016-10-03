@@ -9,6 +9,8 @@
 namespace Keboola\DbWriter\Writer;
 
 use Keboola\Csv\CsvFile;
+use Keboola\DbWriter\Configuration\ConfigDefinition;
+use Keboola\DbWriter\Configuration\Validator;
 use Keboola\DbWriter\Test\BaseTest;
 use Keboola\DbWriter\WriterInterface;
 
@@ -25,14 +27,15 @@ class CommonTest extends BaseTest
     {
         parent::setUp();
 
-        $this->config = $this->getConfig(self::DRIVER);
+        $validate = Validator::getValidator(new ConfigDefinition());
+        $this->config['parameters'] = $validate($this->getConfig(self::DRIVER)['parameters']);
         $this->writer = $this->getWriter($this->config['parameters']);
         $conn = $this->writer->getConnection();
 
         $tables = $this->writer->showTables($this->config['parameters']['db']['database']);
 
         foreach ($tables as $tableName) {
-            $res = $conn->exec("DROP TABLE IF EXISTS {$tableName}");
+            $conn->exec("DROP TABLE IF EXISTS {$tableName}");
         }
     }
 
