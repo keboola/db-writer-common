@@ -21,7 +21,7 @@ class Application extends Container
 {
     private $configDefinition;
 
-    public function __construct($config, $configDefinition = null)
+    public function __construct($config, Logger $logger, $configDefinition = null)
     {
         parent::__construct();
 
@@ -33,9 +33,7 @@ class Application extends Container
 
         $this['action'] = isset($config['action'])?$config['action']:'run';
         $this['parameters'] = $this->validateParameters($config['parameters']);
-        $this['logger'] = function() use ($app) {
-            return new Logger(APP_NAME);
-        };
+        $this['logger'] = $logger;
         $this['writer_factory'] = function() use ($app) {
             return new WriterFactory($app['parameters']);
         };
