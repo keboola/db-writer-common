@@ -87,6 +87,8 @@ class ApplicationTest extends BaseTest
 
     public function testGetTablesInfo()
     {
+        $this->runApp(new Application($this->config, new Logger(APP_NAME)));
+
         $config = $this->config;
         $config['action'] = 'getTablesInfo';
         $result = (new Application($config, new Logger(APP_NAME)))->run();
