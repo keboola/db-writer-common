@@ -28,8 +28,9 @@ class Application extends Container
         $app = $this;
 
         if ($configDefinition == null) {
-            $this->configDefinition = new ConfigDefinition();
+            $configDefinition = new ConfigDefinition();
         }
+        $this->configDefinition = $configDefinition;
 
         $this['action'] = isset($config['action'])?$config['action']:'run';
         $this['parameters'] = $this->validateParameters($config['parameters']);
