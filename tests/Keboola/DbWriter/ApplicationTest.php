@@ -45,7 +45,6 @@ class ApplicationTest extends BaseTest
         $logger = new Logger(APP_NAME);
         $logger->setHandlers([$testHandler]);
 
-
         $config = $this->config;
         $config['parameters']['db']['ssh'] = [
             'enabled' => true,
@@ -71,6 +70,29 @@ class ApplicationTest extends BaseTest
 
         $this->assertEquals(Logger::INFO, $record['level']);
         $this->assertRegExp('/Creating SSH tunnel/ui', $record['message']);
+    }
+
+    public function testRunWithSSHException()
+    {
+        $this->expectException('Keboola\DbWriter\Exception\UserException');
+        $this->expectExceptionMessageRegExp('/Could not resolve hostname herebedragons/ui');
+
+        $logger = new Logger(APP_NAME);
+
+        $config = $this->config;
+        $config['parameters']['db']['ssh'] = [
+            'enabled' => true,
+            'keys' => [
+                '#private' => $this->getEnv('common', 'DB_SSH_KEY_PRIVATE'),
+                'public' => $this->getEnv('common', 'DB_SSH_KEY_PUBLIC')
+            ],
+            'sshHost' => 'hereBeDragons',
+            'localPort' => '33306',
+            'remoteHost' => 'mysql',
+            'remotePort' => '3306',
+        ];
+
+        (new Application($config, $logger))->run();
     }
 
     public function testRunReorderColumns()

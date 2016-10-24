@@ -10,6 +10,7 @@ namespace Keboola\DbWriter;
 use Keboola\DbWriter\Exception\ApplicationException;
 use Keboola\DbWriter\Exception\UserException;
 use Keboola\SSHTunnel\SSH;
+use Keboola\SSHTunnel\SSHException;
 
 abstract class Writer implements WriterInterface
 {
@@ -75,8 +76,12 @@ abstract class Writer implements WriterInterface
 
         $this->logger->info("Creating SSH tunnel to '" . $tunnelParams['sshHost'] . "'");
 
-        $ssh = new SSH();
-        $ssh->openTunnel($tunnelParams);
+        try {
+            $ssh = new SSH();
+            $ssh->openTunnel($tunnelParams);
+        } catch (SSHException $e) {
+            throw new UserException($e->getMessage());
+        }
 
         $dbConfig['host'] = '127.0.0.1';
         $dbConfig['port'] = $sshConfig['localPort'];
