@@ -12,6 +12,7 @@ namespace Keboola\DbWriter;
 use Keboola\Csv\CsvFile;
 use Keboola\DbWriter\Configuration\ConfigDefinition;
 use Keboola\DbWriter\Configuration\Validator;
+use Keboola\DbWriter\Exception\ApplicationException;
 use Keboola\DbWriter\Exception\UserException;
 use Pimple\Container;
 
@@ -82,8 +83,12 @@ class Application extends Container
                     }
                     $writer->upsert($table, $targetTableName);
                 }
-            } catch (\Exception $e) {
+            } catch (UserException $e) {
+                throw $e;
+            } catch (\PDOException $e) {
                 throw new UserException($e->getMessage(), 400, $e);
+            } catch (\Exception $e) {
+                throw new ApplicationException($e->getMessage(), 500, $e);
             }
 
             $uploaded[] = $table['tableId'];
