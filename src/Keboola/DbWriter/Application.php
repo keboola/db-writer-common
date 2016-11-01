@@ -69,6 +69,10 @@ class Application extends Container
             $table['dbName'] .= $table['incremental']?'_temp_' . uniqid():'';
             $table['items'] = $this->reorderColumns($csv, $table['items']);
 
+            if (empty($table['items'])) {
+                continue;
+            }
+
             try {
                 $writer->drop($table['dbName']);
                 $writer->create($table);
