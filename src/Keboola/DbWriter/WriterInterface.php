@@ -19,6 +19,7 @@ interface WriterInterface
     public function create(array $table);
     public function upsert(array $table, $targetTable);
     public function tableExists($tableName);
+    public function generateTmpName($tableName);
     public function showTables($dbName);
     public function getTableInfo($tableName);
     public function isTableValid(array $table);

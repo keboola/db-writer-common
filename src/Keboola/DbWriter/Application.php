@@ -16,6 +16,12 @@ use Keboola\DbWriter\Exception\ApplicationException;
 use Keboola\DbWriter\Exception\UserException;
 use Pimple\Container;
 
+
+/***
+ * Class Application
+ * @package Keboola\DbWriter
+ *
+ */
 class Application extends Container
 {
     public function __construct($config, Logger $logger, $configDefinition = null)
@@ -66,7 +72,11 @@ class Application extends Container
             $csv = $this->getInputCsv($table['tableId']);
 
             $targetTableName = $table['dbName'];
-            $table['dbName'] .= $table['incremental']?'_temp_' . uniqid():'';
+
+            if ($table['incremental']) {
+                $table['dbName'] = $writer->generateTmpName($table['dbName']);
+            }
+
             $table['items'] = $this->reorderColumns($csv, $table['items']);
 
             if (empty($table['items'])) {

@@ -50,6 +50,11 @@ class Common extends Writer implements WriterInterface
         return $pdo;
     }
 
+    public function generateTmpName($tableName)
+    {
+        return $tableName . '_temp_' . uniqid();
+    }
+
     public function drop($tableName)
     {
         $this->db->exec("DROP TABLE IF EXISTS `{$tableName}`;");
