@@ -52,7 +52,8 @@ class Common extends Writer implements WriterInterface
 
     public function generateTmpName($tableName)
     {
-        return $tableName . '_temp_' . uniqid();
+        $tmpId = '_temp_' . uniqid();
+        return mb_substr($tableName, 0, 64 - mb_strlen($tmpId)) . $tmpId;
     }
 
     public function drop($tableName)
