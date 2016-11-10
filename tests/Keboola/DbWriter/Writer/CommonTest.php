@@ -182,4 +182,20 @@ class CommonTest extends BaseTest
         $this->assertEquals('col1', $tableInfo[0]['Field']);
         $this->assertEquals('varchar(255)', $tableInfo[0]['Type']);
     }
+
+    public function testGenerateTmpName()
+    {
+        $tableName = 'firstTable';
+
+        $tmpName = $this->writer->generateTmpName($tableName);
+        $this->assertRegExp('/' . $tableName . '/ui', $tmpName);
+        $this->assertRegExp('/temp/ui', $tmpName);
+        $this->assertLessThanOrEqual(64, mb_strlen($tmpName));
+
+        $tableName = str_repeat('firstTableWithLongName', 6);
+
+        $tmpName = $this->writer->generateTmpName($tableName);
+        $this->assertRegExp('/temp/ui', $tmpName);
+        $this->assertLessThanOrEqual(64, mb_strlen($tmpName));
+    }
 }
