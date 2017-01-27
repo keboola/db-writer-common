@@ -53,15 +53,15 @@ abstract class Writer implements WriterInterface
         if (empty($sshConfig['user'])) {
             $sshConfig['user'] = $dbConfig['user'];
         }
-
+        if (empty($sshConfig['localPort'])) {
+            $sshConfig['localPort'] = 33006;
+        }
         if (empty($sshConfig['remoteHost'])) {
             $sshConfig['remoteHost'] = $dbConfig['host'];
         }
-
         if (empty($sshConfig['remotePort'])) {
             $sshConfig['remotePort'] = $dbConfig['port'];
         }
-
         if (empty($sshConfig['sshPort'])) {
             $sshConfig['sshPort'] = 22;
         }
