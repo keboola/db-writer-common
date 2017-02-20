@@ -93,6 +93,7 @@ class Application extends Container
                     if (!$writer->tableExists($targetTableName)) {
                         $destinationTable = $table;
                         $destinationTable['dbName'] = $targetTableName;
+                        $destinationTable['incremental'] = false;
                         $writer->create($destinationTable);
                     }
                     $writer->upsert($table, $targetTableName);
