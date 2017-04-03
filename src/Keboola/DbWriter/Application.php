@@ -115,7 +115,7 @@ class Application extends Container
         ];
     }
 
-    private function reorderColumns(CsvFile $csv, $items)
+    protected function reorderColumns(CsvFile $csv, $items)
     {
         $csv->next();
         $csvHeader = $csv->current();
@@ -133,7 +133,7 @@ class Application extends Container
         return $reordered;
     }
 
-    private function getInputCsv($tableId)
+    protected function getInputCsv($tableId)
     {
         return new CsvFile($this['parameters']['data_dir'] . "/in/tables/" . $tableId . ".csv");
     }
