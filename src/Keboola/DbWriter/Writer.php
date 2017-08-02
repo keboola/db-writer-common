@@ -21,6 +21,8 @@ abstract class Writer implements WriterInterface
     /** @var Logger */
     protected $logger;
 
+    protected $dbParams;
+
     public function __construct($dbParams, Logger $logger)
     {
         $this->logger = $logger;
@@ -28,9 +30,10 @@ abstract class Writer implements WriterInterface
         if (isset($dbParams['ssh']['enabled']) && $dbParams['ssh']['enabled']) {
             $dbParams = $this->createSshTunnel($dbParams);
         }
+        $this->dbParams = $dbParams;
 
         try {
-            $this->db = $this->createConnection($dbParams);
+            $this->db = $this->createConnection($this->dbParams);
         } catch (\Exception $e) {
             if (strstr(strtolower($e->getMessage()), 'could not find driver')) {
                 throw new ApplicationException("Missing driver: " . $e->getMessage());
@@ -92,18 +95,5 @@ abstract class Writer implements WriterInterface
     public function getConnection()
     {
         return $this->db;
-    }
-
-    /**
-     * @return boolean
-     */
-    public function isAsync()
-    {
-        return $this->async;
-    }
-
-    public function writeAsync($tableId, $outputTableName)
-    {
-        throw new ApplicationException("Not implemented.");
     }
 }

@@ -46,6 +46,10 @@ class Application extends Container
         };
     }
 
+    /**
+     * @return string
+     * @throws UserException
+     */
     public function run()
     {
         $actionMethod = $this['action'] . 'Action';
@@ -58,61 +62,69 @@ class Application extends Container
 
     public function runAction()
     {
-        $uploaded = [];
         $tables = array_filter($this['parameters']['tables'], function ($table) {
             return ($table['export']);
         });
 
-        $writer = $this['writer'];
-        foreach ($tables as $table) {
-            if (!$writer->isTableValid($table)) {
-                continue;
-            }
+        foreach ($tables as $tableConfig) {
+            $csv = $this->getInputCsv($tableConfig['tableId']);
+            $tableConfig['items'] = $this->reorderColumns($csv, $tableConfig['items']);
 
-            $csv = $this->getInputCsv($table['tableId']);
-
-            $targetTableName = $table['dbName'];
-
-            if ($table['incremental']) {
-                $table['dbName'] = $writer->generateTmpName($table['dbName']);
-            }
-
-            $table['items'] = $this->reorderColumns($csv, $table['items']);
-
-            if (empty($table['items'])) {
+            if (empty($tableConfig['items'])) {
                 continue;
             }
 
             try {
-                $writer->drop($table['dbName']);
-                $writer->create($table);
-                $writer->write($csv, $table);
-
-                if ($table['incremental']) {
-                    // create target table if not exists
-                    if (!$writer->tableExists($targetTableName)) {
-                        $destinationTable = $table;
-                        $destinationTable['dbName'] = $targetTableName;
-                        $destinationTable['incremental'] = false;
-                        $writer->create($destinationTable);
-                    }
-                    $writer->upsert($table, $targetTableName);
+                if ($tableConfig['incremental']) {
+                    $this->writeIncremental($csv, $tableConfig);
+                    continue;
                 }
+
+                $this->writeFull($csv, $tableConfig);
+            } catch (\PDOException $e) {
+                throw new UserException($e->getMessage(), 0, $e, ["trace" => $e->getTraceAsString()]);
             } catch (UserException $e) {
                 throw $e;
-            } catch (\PDOException $e) {
-                throw new UserException($e->getMessage(), 400, $e);
             } catch (\Exception $e) {
-                throw new ApplicationException($e->getMessage(), 500, $e);
+                throw new ApplicationException($e->getMessage(), 2, $e, ["trace" => $e->getTraceAsString()]);
             }
-
-            $uploaded[] = $table['tableId'];
         }
 
-        return [
-            'status' => 'success',
-            'uploaded' => $uploaded
-        ];
+        return "Writer finished successfully";
+    }
+
+    public function writeIncremental($csv, $tableConfig)
+    {
+        /** @var WriterInterface $writer */
+        $writer = $this['writer'];
+
+        // write to staging table
+        $stageTable = $tableConfig;
+        $stageTable['dbName'] = $writer->generateTmpName($tableConfig['dbName']);
+
+        $writer->drop($stageTable['dbName']);
+        $writer->create($stageTable);
+        $writer->write($csv, $stageTable);
+
+        // create destination table if not exists
+        $dstTableExists = $writer->tableExists($tableConfig['dbName']);
+        if (!$dstTableExists) {
+            $writer->create($tableConfig);
+        }
+        $writer->validateTable($tableConfig);
+
+        // upsert from staging to destination table
+        $writer->upsert($stageTable, $tableConfig['dbName']);
+    }
+
+    public function writeFull($csv, $tableConfig)
+    {
+        /** @var WriterInterface $writer */
+        $writer = $this['writer'];
+
+        $writer->drop($tableConfig['dbName']);
+        $writer->create($tableConfig);
+        $writer->write($csv, $tableConfig);
     }
 
     protected function reorderColumns(CsvFile $csv, $items)
@@ -146,9 +158,9 @@ class Application extends Container
             throw new UserException(sprintf("Connection failed: '%s'", $e->getMessage()), 0, $e);
         }
 
-        return [
+        return json_encode([
             'status' => 'success',
-        ];
+        ]);
     }
 
     public function getTablesInfoAction()
@@ -160,9 +172,9 @@ class Application extends Container
             $tablesInfo[$tableName] = $this['writer']->getTableInfo($tableName);
         }
 
-        return [
+        return json_encode([
             'status' => 'success',
             'tables' => $tablesInfo
-        ];
+        ]);
     }
 }

@@ -22,8 +22,6 @@ interface WriterInterface
     public function generateTmpName($tableName);
     public function showTables($dbName);
     public function getTableInfo($tableName);
-    public function isTableValid(array $table);
     public static function getAllowedTypes();
-    public function isAsync();
-
+    public function validateTable($tableConfig);
 }

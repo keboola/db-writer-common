@@ -114,8 +114,9 @@ class ApplicationTest extends BaseTest
         $config = $this->config;
         $config['action'] = 'getTablesInfo';
         $result = (new Application($config, new Logger(APP_NAME)))->run();
+        $resultJson = json_decode($result, true);
 
-        $this->assertContains('encoding', array_keys($result['tables']));
+        $this->assertContains('encoding', array_keys($resultJson['tables']));
     }
 
     protected function runApp(Application $app)
@@ -125,7 +126,7 @@ class ApplicationTest extends BaseTest
         $encodingIn = $this->dataDir . '/in/tables/encoding.csv';
         $encodingOut = $this->dbTableToCsv($app['writer']->getConnection(), 'encoding', ['col1', 'col2']);
 
-        $this->assertEquals('success', $result['status']);
+        $this->assertEquals('Writer finished successfully', $result);
         $this->assertFileExists($encodingOut->getPathname());
         $this->assertEquals(file_get_contents($encodingIn), file_get_contents($encodingOut));
     }

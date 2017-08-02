@@ -198,4 +198,14 @@ class CommonTest extends BaseTest
         $this->assertRegExp('/temp/ui', $tmpName);
         $this->assertLessThanOrEqual(64, mb_strlen($tmpName));
     }
+
+    public function testValidateTable()
+    {
+        $table = $this->config['parameters']['tables'][0];
+        $this->writer->create($table);
+
+        $res = $this->writer->validateTable($table);
+
+        $this->assertTrue($res);
+    }
 }

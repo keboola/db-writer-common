@@ -163,38 +163,6 @@ class Common extends Writer implements WriterInterface
         $this->db->exec($query);
     }
 
-    public function isTableValid(array $table)
-    {
-        if (!count($table['items'])) {
-            return false;
-        }
-
-        if (!isset($table['dbName'])) {
-            return false;
-        }
-
-        if (!isset($table['tableId'])) {
-            return false;
-        }
-
-        if (!isset($table['export']) || $table['export'] == false) {
-            return false;
-        }
-
-        $ignoredCnt = 0;
-        foreach ($table['items'] as $column) {
-            if ($column['type'] == 'IGNORE') {
-                $ignoredCnt++;
-            }
-        }
-
-        if ($ignoredCnt == count($table['items'])) {
-            return false;
-        }
-
-        return true;
-    }
-
     public function tableExists($tableName)
     {
         $tableArr = explode('.', $tableName);
@@ -239,5 +207,43 @@ class Common extends Writer implements WriterInterface
     {
         $stmt = $this->db->query("DESCRIBE {$tableName}");
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function validateTable($tableConfig)
+    {
+        $tableInfo = $this->getTableInfo($tableConfig['dbName']);
+
+        foreach ($tableConfig['items'] as $column) {
+            $exists = false;
+            $dstDataType = null;
+            foreach ($tableInfo as $dbColumn) {
+                $exists = ($dbColumn['Field'] == $column['dbName']);
+                if ($exists) {
+                    $dstDataType = preg_replace('/\(.*\)/', '', $dbColumn['Type']);
+                    break;
+                }
+            }
+
+            if (!$exists) {
+                throw new UserException(sprintf(
+                    'Column \'%s\' not found in destination table \'%s\'',
+                    $column['dbName'],
+                    $tableConfig['dbName']
+                ));
+            }
+
+            $srcDataType = strtolower($column['type']);
+            if ($dstDataType !== $srcDataType) {
+                throw new UserException(sprintf(
+                    'Data type mismatch. Column \'%s\' is of type \'%s\' in writer, but is \'%s\' in destination table \'%s\'',
+                    $column['dbName'],
+                    $srcDataType,
+                    $dstDataType,
+                    $tableConfig['dbName']
+                ));
+            }
+        }
+
+        return true;
     }
 }

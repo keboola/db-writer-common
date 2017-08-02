@@ -1,4 +1,3 @@
-#VERSION 1.0.0
 FROM keboola/base-php56
 MAINTAINER Miro Cillik <miro@keboola.com>
 
@@ -17,4 +16,4 @@ RUN curl --location --silent --show-error --fail \
         > /usr/local/bin/waitforservices && \
     chmod +x /usr/local/bin/waitforservices
 
-ENTRYPOINT php ./vendor/bin/phpunit
+CMD php ./vendor/bin/phpunit
