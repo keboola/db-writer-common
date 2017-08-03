@@ -82,11 +82,13 @@ class Application extends Container
 
                 $this->writeFull($csv, $tableConfig);
             } catch (\PDOException $e) {
-                throw new UserException($e->getMessage(), 0, $e, ["trace" => $e->getTraceAsString()]);
+                $this['logger']->error($e->getMessage());
+                throw new UserException($e->getMessage(), 0, $e);
             } catch (UserException $e) {
+                $this['logger']->error($e->getMessage());
                 throw $e;
             } catch (\Exception $e) {
-                throw new ApplicationException($e->getMessage(), 2, $e, ["trace" => $e->getTraceAsString()]);
+                throw new ApplicationException($e->getMessage(), 2, $e);
             }
         }
 
