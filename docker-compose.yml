@@ -1,20 +1,41 @@
 version: "2"
 services:
-  app:
+  dev:
     build: .
     image: keboola/db-writer-common
-    command: "./phpunit.sh"
+    command: bash
     volumes:
         - .:/code
     working_dir: /code
     tty: true
     stdin_open: true
     environment:
-      COMMON_DB_USER: root
-      COMMON_DB_PASSWORD: somePassword
-      COMMON_DB_HOST: mysql
-      COMMON_DB_PORT: 3306
-      COMMON_DB_DATABASE: testdb
+      DB_USER: root
+      DB_PASSWORD: somePassword
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: testdb
+      SSH_KEY_PRIVATE: ${SSH_KEY_PRIVATE}
+      SSH_KEY_PUBLIC: ${SSH_KEY_PUBLIC}
+    links:
+      - sshproxy
+      - mysql
+
+  tests:
+    build: .
+    image: keboola/db-writer-common
+    command: composer ci
+    working_dir: /code
+    tty: true
+    stdin_open: true
+    environment:
+      DB_USER: root
+      DB_PASSWORD: somePassword
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: testdb
+      SSH_KEY_PRIVATE: ${SSH_KEY_PRIVATE}
+      SSH_KEY_PUBLIC: ${SSH_KEY_PUBLIC}
     links:
       - sshproxy
       - mysql
@@ -27,9 +48,9 @@ services:
 
   sshproxy:
     build: ./tests/env/sshproxy
-    volumes:
-        - ./tests/env/sshproxy:/code
-    working_dir: /code
+    command: sh -c 'echo $SSH_KEY_PUBLIC >> ~/.ssh/authorized_keys && /usr/sbin/sshd -D'
+    environment:
+      - SSH_KEY_PUBLIC
     ports:
       - "2222:22"
     links:

@@ -3,5 +3,9 @@ sudo: false
 services:
   - docker
 
+install:
+  - source ./tests/generate-ssh-keys.sh
+  - docker-compose build tests
+
 script:
-  - docker-compose run --rm app
+  - docker-compose run --rm tests

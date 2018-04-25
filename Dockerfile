@@ -1,19 +1,22 @@
-FROM keboola/base-php56
+FROM php:7.1-cli
 MAINTAINER Miro Cillik <miro@keboola.com>
 
-# Install dependencies
-RUN yum -y --enablerepo=epel,remi,remi-php56 install \
-    php-devel \
-    php-mysql
+# Deps
+RUN apt-get update
+RUN apt-get install -y wget curl make git bzip2 time libzip-dev openssl unzip
+
+# PHP
+RUN docker-php-ext-install pdo pdo_mysql
+
+# Composer
+WORKDIR /root
+RUN cd \
+  && curl -sS https://getcomposer.org/installer | php \
+  && ln -s /root/composer.phar /usr/local/bin/composer
 
 ADD . /code
 WORKDIR /code
 RUN echo "memory_limit = -1" >> /etc/php.ini
-RUN composer install --no-interaction
-
-RUN curl --location --silent --show-error --fail \
-        https://github.com/Barzahlen/waitforservices/releases/download/v0.3/waitforservices \
-        > /usr/local/bin/waitforservices && \
-    chmod +x /usr/local/bin/waitforservices
+RUN composer selfupdate && composer install --no-interaction
 
 CMD php ./vendor/bin/phpunit

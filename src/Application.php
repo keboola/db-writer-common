@@ -1,12 +1,5 @@
 <?php
 
-/**
- * Created by PhpStorm.
- * User: miroslavcillik
- * Date: 10/12/15
- * Time: 12:17
- */
-
 namespace Keboola\DbWriter;
 
 use Keboola\Csv\CsvFile;
@@ -16,12 +9,6 @@ use Keboola\DbWriter\Exception\ApplicationException;
 use Keboola\DbWriter\Exception\UserException;
 use Pimple\Container;
 
-
-/***
- * Class Application
- * @package Keboola\DbWriter
- *
- */
 class Application extends Container
 {
     public function __construct($config, Logger $logger, $configDefinition = null)
@@ -38,10 +25,10 @@ class Application extends Container
         $this['action'] = isset($config['action'])?$config['action']:'run';
         $this['parameters'] = $validate($config['parameters']);
         $this['logger'] = $logger;
-        $this['writer_factory'] = function() use ($app) {
+        $this['writer_factory'] = function () use ($app) {
             return new WriterFactory($app['parameters']);
         };
-        $this['writer'] = function() use ($app) {
+        $this['writer'] = function () use ($app) {
             return $app['writer_factory']->create($app['logger']);
         };
     }
