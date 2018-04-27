@@ -13,12 +13,11 @@
   "require": {
     "php": "^7.1",
     "keboola/csv": "^1.1",
-    "pimple/pimple": "^3.0",
+    "keboola/ssh-tunnel": "^1.0",
     "monolog/monolog": "^1.17",
-    "symfony/process": "^3.0",
-    "symfony/config": "^3.0",
-    "symfony/yaml": "^3.0",
-    "keboola/ssh-tunnel": "^1.0"
+    "pimple/pimple": "^3.0",
+    "symfony/config": "^4.0",
+    "symfony/process": "^3.0"
   },
   "require-dev": {
     "keboola/coding-standard": "^2.0",
