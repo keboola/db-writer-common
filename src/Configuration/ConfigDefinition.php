@@ -28,6 +28,7 @@ class ConfigDefinition implements ConfigurationInterface
                     ->cannotBeEmpty()
                 ->end()
                 ->arrayNode('db')
+                    ->isRequired()
                     ->children()
                         ->scalarNode('driver')->end()
                         ->scalarNode('host')->end()
