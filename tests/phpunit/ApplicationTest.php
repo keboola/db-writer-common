@@ -112,7 +112,8 @@ class ApplicationTest extends BaseTest
         $this->getApp($this->shuffleItems($this->config))->run();
     }
 
-    protected function shuffleItems($config) {
+    protected function shuffleItems($config)
+    {
         $col1 =  array_shift($config['parameters']['tables'][0]['items']);
         array_push($config['parameters']['tables'][0]['items'], $col1);
 
