@@ -1,5 +1,9 @@
 FROM php:7-cli
-MAINTAINER Miro Cillik <miro@keboola.com>
+
+# Env vars
+ARG DEBIAN_FRONTEND=noninteractive
+ENV COMPOSER_ALLOW_SUPERUSER 1
+ENV COMPOSER_PROCESS_TIMEOUT 3600
 
 # Deps
 RUN apt-get update
@@ -10,13 +14,13 @@ RUN docker-php-ext-install pdo pdo_mysql
 
 # Composer
 WORKDIR /root
-RUN cd \
-  && curl -sS https://getcomposer.org/installer | php \
+RUN curl -sS https://getcomposer.org/installer | php \
   && ln -s /root/composer.phar /usr/local/bin/composer
 
+# App
 ADD . /code
 WORKDIR /code
-RUN echo "memory_limit = -1" >> /etc/php.ini
+COPY docker/php-prod.ini /usr/local/etc/php/php.ini
 RUN composer selfupdate && composer install --no-interaction
 
 CMD php ./vendor/bin/phpunit
