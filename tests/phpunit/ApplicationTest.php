@@ -18,7 +18,9 @@ class ApplicationTest extends BaseTest
     {
         parent::setUp();
         $validate = Validator::getValidator(new ConfigDefinition());
-        $this->config['parameters'] = $validate($this->getConfig()['parameters']);
+        $config = $this->getConfig();
+        $config['parameters'] = $validate($config['parameters']);
+        $this->config = $config;
 
         $writer = $this->getWriter($this->config['parameters']);
         $conn = $writer->getConnection();
@@ -89,18 +91,6 @@ class ApplicationTest extends BaseTest
         $this->getApp($config)->run();
     }
 
-    public function testRunReorderColumns()
-    {
-        $simpleTableCfg = $this->config['parameters']['tables'][1];
-        $firstCol = $simpleTableCfg['items'][0];
-        $secondCol = $simpleTableCfg['items'][1];
-        $simpleTableCfg['items'][0] = $secondCol;
-        $simpleTableCfg['items'][1] = $firstCol;
-        $this->config['parameters']['tables'][1] = $simpleTableCfg;
-
-        $this->runApp($this->getApp($this->config));
-    }
-
     public function testGetTablesInfo()
     {
         $this->runApp($this->getApp($this->config));
@@ -111,6 +101,22 @@ class ApplicationTest extends BaseTest
         $resultJson = json_decode($result, true);
 
         $this->assertContains('encoding', array_keys($resultJson['tables']));
+    }
+
+    public function testWrongColumnOrder()
+    {
+        $this->expectException('Keboola\\DbWriter\\Exception\\UserException');
+        $this->expectExceptionMessage('Columns in configuration of table "encoding" does not match with input mapping. Edit and re-save the configuration to fix the problem.');
+
+        // shuffle columns order
+        $this->getApp($this->shuffleItems($this->config))->run();
+    }
+
+    protected function shuffleItems($config) {
+        $col1 =  array_shift($config['parameters']['tables'][0]['items']);
+        array_push($config['parameters']['tables'][0]['items'], $col1);
+
+        return $config;
     }
 
     protected function getApp($config, $logger = null)
