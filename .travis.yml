@@ -5,6 +5,7 @@ services:
 
 install:
   - source ./tests/generate-ssh-keys.sh
+  - docker pull waisbrot/wait
   - docker-compose build tests
 
 script:

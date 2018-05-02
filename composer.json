@@ -40,11 +40,9 @@
     "phpcs": "phpcs -n --ignore=vendor --extensions=php .",
     "phpcbf": "phpcbf -n --ignore=vendor --extensions=php .",
     "phpstan": "phpstan analyse ./src ./tests --level=0 --no-progress",
-    "dockerize": "./tests/dockerize.sh",
     "build": [
       "@phpstan",
       "@phpcs",
-      "@dockerize",
       "@tests"
     ],
     "ci": [

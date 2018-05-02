@@ -1,33 +1,12 @@
 version: "2"
 services:
-  dev:
-    build: .
-    image: keboola/db-writer-common
-    command: bash
-    volumes:
-        - .:/code
-    working_dir: /code
-    tty: true
-    stdin_open: true
-    environment:
-      DB_USER: root
-      DB_PASSWORD: somePassword
-      DB_HOST: mysql
-      DB_PORT: 3306
-      DB_DATABASE: testdb
-      SSH_KEY_PRIVATE: ${SSH_KEY_PRIVATE}
-      SSH_KEY_PUBLIC: ${SSH_KEY_PUBLIC}
-    links:
-      - sshproxy
-      - mysql
-
   tests:
     build: .
     image: keboola/db-writer-common
     command: composer ci
+    volumes:
+        - .:/code
     working_dir: /code
-    tty: true
-    stdin_open: true
     environment:
       DB_USER: root
       DB_PASSWORD: somePassword
@@ -37,8 +16,15 @@ services:
       SSH_KEY_PRIVATE: ${SSH_KEY_PRIVATE}
       SSH_KEY_PUBLIC: ${SSH_KEY_PUBLIC}
     links:
+      - wait
       - sshproxy
       - mysql
+
+  wait:
+    image: waisbrot/wait
+    environment:
+      TARGETS: "mysql:3306"
+      TIMEOUT: 60
 
   mysql:
     image: mysql:5.6
