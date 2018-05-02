@@ -3,7 +3,7 @@ services:
   tests:
     build: .
     image: keboola/db-writer-common
-    command: composer ci
+    command: sh -c 'composer install -n && composer ci'
     volumes:
         - .:/code
     working_dir: /code
