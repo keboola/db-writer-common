@@ -71,7 +71,7 @@ class Application extends Container
 
         foreach ($tables as $tableConfig) {
             $csv = $this->getInputCsv($tableConfig['tableId']);
-            $this->checkColumns($tableConfig);
+            $tableConfig['items'] = $this->reorderColumns($csv, $tableConfig['items']);
 
             if (empty($tableConfig['items'])) {
                 continue;
@@ -132,38 +132,22 @@ class Application extends Container
         $writer->write($csv, $tableConfig);
     }
 
-    protected function getInputMapping($tableId)
+    protected function reorderColumns(CsvFile $csv, $items)
     {
-        foreach ($this['inputMapping'] as $inputTable) {
-            if ($tableId == $inputTable['source']) {
-                return $inputTable;
+        $csv->next();
+        $csvHeader = $csv->current();
+        $csv->rewind();
+
+        $reordered = [];
+        foreach ($csvHeader as $csvCol) {
+            foreach ($items as $item) {
+                if ($csvCol == $item['name']) {
+                    $reordered[] = $item;
+                }
             }
         }
-        throw new UserException(sprintf(
-            'Table "%s" is missing from input mapping. Reloading the page and re-saving configuration may fix the problem.',
-            $tableId
-        ));
-    }
 
-    /**
-     * Check if input mapping is aligned with table config
-     *
-     * @param $tableConfig
-     * @throws UserException
-     */
-    protected function checkColumns($tableConfig)
-    {
-        $inputMapping = $this->getInputMapping($tableConfig['tableId']);
-        $mappingColumns = $inputMapping['columns'];
-        $tableColumns = array_map(function ($item) {
-            return $item['name'];
-        }, $tableConfig['items']);
-        if ($mappingColumns !== $tableColumns) {
-            throw new UserException(sprintf(
-                'Columns in configuration of table "%s" does not match with input mapping. Edit and re-save the configuration to fix the problem.',
-                $inputMapping['source']
-            ));
-        }
+        return $reordered;
     }
 
     protected function getInputCsv($tableId)
