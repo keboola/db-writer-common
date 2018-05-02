@@ -27,7 +27,6 @@ class Application extends Container
 
         $this['action'] = isset($config['action'])?$config['action']:'run';
         $this['parameters'] = $validate($config['parameters']);
-        $this['inputMapping'] = $config['storage']['input']['tables'];
         $this['logger'] = $logger;
         $this['writer_factory'] = function () use ($app) {
             return new WriterFactory($app['parameters']);

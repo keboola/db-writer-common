@@ -71,28 +71,5 @@
         ]
       }
     ]
-  },
-  "storage": {
-    "input": {
-      "tables": [
-        {
-          "source": "encoding",
-          "destination": "encoding.csv",
-          "columns": [
-            "col1",
-            "col2"
-          ]
-        },
-        {
-          "source": "simple",
-          "destination": "simple.csv",
-          "columns": [
-            "id",
-            "name",
-            "glasses"
-          ]
-        }
-      ]
-    }
   }
 }
