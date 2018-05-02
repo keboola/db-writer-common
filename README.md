@@ -25,7 +25,5 @@ composer.json
 
         docker-compose run --rm tests
     
-3. Run container in "dev" mode. (Changes made to code will reflect in container:
 
-        docker-compose run --rm dev
     
