@@ -1,12 +1,6 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: miroslavcillik
- * Date: 05/11/15
- * Time: 13:38
- */
 
-namespace Keboola\DbWriter\Writer;
+namespace Keboola\DbWriter\Tests\Writer;
 
 use Keboola\Csv\CsvFile;
 use Keboola\DbWriter\Configuration\ConfigDefinition;
@@ -16,8 +10,6 @@ use Keboola\DbWriter\WriterInterface;
 
 class CommonTest extends BaseTest
 {
-    const DRIVER = 'common';
-
     /** @var WriterInterface */
     protected $writer;
 
@@ -28,7 +20,7 @@ class CommonTest extends BaseTest
         parent::setUp();
 
         $validate = Validator::getValidator(new ConfigDefinition());
-        $this->config['parameters'] = $validate($this->getConfig(self::DRIVER)['parameters']);
+        $this->config['parameters'] = $validate($this->getConfig()['parameters']);
         $this->writer = $this->getWriter($this->config['parameters']);
         $conn = $this->writer->getConnection();
 

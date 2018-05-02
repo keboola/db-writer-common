@@ -1,10 +1,5 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: miroslavcillik
- * Date: 09/03/16
- * Time: 11:23
- */
+
 namespace Keboola\DbWriter\Configuration;
 
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
@@ -33,6 +28,7 @@ class ConfigDefinition implements ConfigurationInterface
                     ->cannotBeEmpty()
                 ->end()
                 ->arrayNode('db')
+                    ->isRequired()
                     ->children()
                         ->scalarNode('driver')->end()
                         ->scalarNode('host')->end()

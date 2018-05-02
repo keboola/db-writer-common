@@ -32,5 +32,4 @@ class WriterFactory
 
         return new $writerClass($this->parameters['db'], $logger);
     }
-
 }

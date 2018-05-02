@@ -1,16 +1,12 @@
 <?php
 
-/**
- * Created by PhpStorm.
- * User: miroslavcillik
- * Date: 26/08/16
- * Time: 15:01
- */
+namespace Keboola\DbWriter\Tests;
+
 class WriterFactoryTest extends \Keboola\DbWriter\Test\BaseTest
 {
     public function testCreate()
     {
-        $config = $this->getConfig('common');
+        $config = $this->getConfig();
         $config['parameters']['writer_class'] = 'Common';
 
         $validate = \Keboola\DbWriter\Configuration\Validator::getValidator(
@@ -23,5 +19,4 @@ class WriterFactoryTest extends \Keboola\DbWriter\Test\BaseTest
 
         $this->assertInstanceOf('Keboola\DbWriter\Writer\Common', $writer);
     }
-
 }

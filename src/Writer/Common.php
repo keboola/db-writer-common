@@ -67,7 +67,6 @@ class Common extends Writer implements WriterInterface
 
         $columns = $table['items'];
         foreach ($columns as $k => $col) {
-
             $type = strtoupper($col['type']);
             if ($type == 'IGNORE') {
                 continue;
@@ -126,7 +125,7 @@ class Common extends Writer implements WriterInterface
             $this->create($destinationTable);
         }
 
-        $columns = array_map(function($item) {
+        $columns = array_map(function ($item) {
             return $item['dbName'];
         }, $table['items']);
 
