@@ -2,6 +2,7 @@
 
 namespace Keboola\DbWriter;
 
+use ErrorException;
 use Keboola\Csv\CsvFile;
 use Keboola\DbWriter\Configuration\ConfigDefinition;
 use Keboola\DbWriter\Configuration\Validator;
@@ -16,6 +17,8 @@ class Application extends Container
         parent::__construct();
 
         $app = $this;
+
+        static::setEnvironment();
 
         if ($configDefinition == null) {
             $configDefinition = new ConfigDefinition();
@@ -32,6 +35,19 @@ class Application extends Container
         $this['writer'] = function () use ($app) {
             return $app['writer_factory']->create($app['logger']);
         };
+    }
+
+    public static function setEnvironment()
+    {
+        error_reporting(E_ALL);
+        set_error_handler(function ($errno, $errstr, $errfile, $errline, array $errcontext): bool {
+            if (!(error_reporting() & $errno)) {
+                // respect error_reporting() level
+                // libraries used in custom components may emit notices that cannot be fixed
+                return false;
+            }
+            throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
+        });
     }
 
     /**
