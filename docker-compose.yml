@@ -16,12 +16,13 @@ services:
       SSH_KEY_PRIVATE: ${SSH_KEY_PRIVATE}
       SSH_KEY_PUBLIC: ${SSH_KEY_PUBLIC}
     links:
-      - wait
       - sshproxy
       - mysql
 
   wait:
     image: waisbrot/wait
+    links:
+      - mysql
     environment:
       TARGETS: "mysql:3306"
       TIMEOUT: 60
