@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DbWriter\Logger;
 
 use Keboola\Csv\CsvFile;

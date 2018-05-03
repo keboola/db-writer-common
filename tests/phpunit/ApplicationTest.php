@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DbWriter\Tests;
 
 use Keboola\Csv\CsvFile;
@@ -12,9 +14,10 @@ use Monolog\Handler\TestHandler;
 
 class ApplicationTest extends BaseTest
 {
+    /** @var array */
     private $config;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $validate = Validator::getValidator(new ConfigDefinition());
@@ -29,12 +32,12 @@ class ApplicationTest extends BaseTest
         }
     }
 
-    public function testRun()
+    public function testRun(): void
     {
         $this->runApp($this->getApp($this->config));
     }
 
-    public function testRunWithSSH()
+    public function testRunWithSSH(): void
     {
         $testHandler = new TestHandler();
 
@@ -46,7 +49,7 @@ class ApplicationTest extends BaseTest
             'enabled' => true,
             'keys' => [
                 '#private' => $this->getPrivateKey(),
-                'public' => $this->getEnv('SSH_KEY_PUBLIC')
+                'public' => $this->getEnv('SSH_KEY_PUBLIC'),
             ],
             'sshHost' => 'sshproxy',
             'localPort' => '33306',
@@ -68,7 +71,7 @@ class ApplicationTest extends BaseTest
         $this->assertRegExp('/Creating SSH tunnel/ui', $record['message']);
     }
 
-    public function testRunWithSSHException()
+    public function testRunWithSSHException(): void
     {
         $this->expectException('Keboola\DbWriter\Exception\UserException');
         $this->expectExceptionMessageRegExp('/Could not resolve hostname herebedragons/ui');
@@ -78,7 +81,7 @@ class ApplicationTest extends BaseTest
             'enabled' => true,
             'keys' => [
                 '#private' => $this->getPrivateKey(),
-                'public' => $this->getEnv('SSH_KEY_PUBLIC')
+                'public' => $this->getEnv('SSH_KEY_PUBLIC'),
             ],
             'sshHost' => 'hereBeDragons',
             'localPort' => '33306',
@@ -89,7 +92,7 @@ class ApplicationTest extends BaseTest
         $this->getApp($config)->run();
     }
 
-    public function testRunReorderColumns()
+    public function testRunReorderColumns(): void
     {
         $simpleTableCfg = $this->config['parameters']['tables'][1];
         $firstCol = $simpleTableCfg['items'][0];
@@ -101,7 +104,7 @@ class ApplicationTest extends BaseTest
         $this->runApp($this->getApp($this->config));
     }
 
-    public function testGetTablesInfo()
+    public function testGetTablesInfo(): void
     {
         $this->runApp($this->getApp($this->config));
 
@@ -113,12 +116,12 @@ class ApplicationTest extends BaseTest
         $this->assertContains('encoding', array_keys($resultJson['tables']));
     }
 
-    protected function getApp($config, $logger = null)
+    protected function getApp(array $config, ?Logger $logger = null): Application
     {
         return new Application($config, $logger ?: new Logger($this->appName));
     }
 
-    protected function runApp(Application $app)
+    protected function runApp(Application $app): void
     {
         $result = $app->run();
 
@@ -127,10 +130,10 @@ class ApplicationTest extends BaseTest
 
         $this->assertEquals('Writer finished successfully', $result);
         $this->assertFileExists($encodingOut->getPathname());
-        $this->assertEquals(file_get_contents($encodingIn), file_get_contents($encodingOut));
+        $this->assertEquals(file_get_contents($encodingIn), file_get_contents($encodingOut->getPathname()));
     }
 
-    protected function dbTableToCsv(\PDO $conn, $tableName, $header)
+    protected function dbTableToCsv(\PDO $conn, string $tableName, array $header): CsvFile
     {
         $stmt = $conn->query("SELECT * FROM {$tableName}");
         $res = $stmt->fetchAll(\PDO::FETCH_ASSOC);

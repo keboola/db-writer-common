@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DbWriter\Tests;
 
 class WriterFactoryTest extends \Keboola\DbWriter\Test\BaseTest
 {
-    public function testCreate()
+    public function testCreate(): void
     {
         $config = $this->getConfig();
         $config['parameters']['writer_class'] = 'Common';

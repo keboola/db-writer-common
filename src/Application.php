@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DbWriter;
 
 use ErrorException;
@@ -12,7 +14,7 @@ use Pimple\Container;
 
 class Application extends Container
 {
-    public function __construct($config, Logger $logger, $configDefinition = null)
+    public function __construct(array $config, Logger $logger, ?ConfigDefinition $configDefinition = null)
     {
         parent::__construct();
 
@@ -36,7 +38,7 @@ class Application extends Container
         };
     }
 
-    public static function setEnvironment()
+    public static function setEnvironment(): void
     {
         error_reporting(E_ALL);
         set_error_handler(function ($errno, $errstr, $errfile, $errline, array $errcontext): bool {
@@ -49,11 +51,7 @@ class Application extends Container
         });
     }
 
-    /**
-     * @return string
-     * @throws UserException
-     */
-    public function run()
+    public function run(): string
     {
         $actionMethod = $this['action'] . 'Action';
         if (!method_exists($this, $actionMethod)) {
@@ -63,7 +61,7 @@ class Application extends Container
         return $this->$actionMethod();
     }
 
-    public function runAction()
+    public function runAction(): string
     {
         $tables = array_filter($this['parameters']['tables'], function ($table) {
             return ($table['export']);
@@ -90,7 +88,7 @@ class Application extends Container
             } catch (UserException $e) {
                 $this['logger']->error($e->getMessage());
                 throw $e;
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 throw new ApplicationException($e->getMessage(), 2, $e);
             }
         }
@@ -98,7 +96,7 @@ class Application extends Container
         return "Writer finished successfully";
     }
 
-    public function writeIncremental($csv, $tableConfig)
+    public function writeIncremental(CsvFile $csv, array $tableConfig): void
     {
         /** @var WriterInterface $writer */
         $writer = $this['writer'];
@@ -122,7 +120,7 @@ class Application extends Container
         $writer->upsert($stageTable, $tableConfig['dbName']);
     }
 
-    public function writeFull($csv, $tableConfig)
+    public function writeFull(CsvFile $csv, array $tableConfig): void
     {
         /** @var WriterInterface $writer */
         $writer = $this['writer'];
@@ -132,7 +130,7 @@ class Application extends Container
         $writer->write($csv, $tableConfig);
     }
 
-    protected function reorderColumns(CsvFile $csv, $items)
+    protected function reorderColumns(CsvFile $csv, array $items): array
     {
         $csv->next();
         $csvHeader = $csv->current();
@@ -150,16 +148,16 @@ class Application extends Container
         return $reordered;
     }
 
-    protected function getInputCsv($tableId)
+    protected function getInputCsv(string $tableId): CsvFile
     {
         return new CsvFile($this['parameters']['data_dir'] . "/in/tables/" . $tableId . ".csv");
     }
 
-    public function testConnectionAction()
+    public function testConnectionAction(): string
     {
         try {
             $this['writer']->testConnection();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             throw new UserException(sprintf("Connection failed: '%s'", $e->getMessage()), 0, $e);
         }
 
@@ -168,7 +166,7 @@ class Application extends Container
         ]);
     }
 
-    public function getTablesInfoAction()
+    public function getTablesInfoAction(): string
     {
         $tables = $this['writer']->showTables($this['parameters']['db']['database']);
 
@@ -179,7 +177,7 @@ class Application extends Container
 
         return json_encode([
             'status' => 'success',
-            'tables' => $tablesInfo
+            'tables' => $tablesInfo,
         ]);
     }
 }

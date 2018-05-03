@@ -1,10 +1,6 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: miroslavcillik
- * Date: 12/02/16
- * Time: 16:38
- */
+
+declare(strict_types=1);
 
 namespace Keboola\DbWriter\Writer;
 
@@ -15,22 +11,23 @@ use Keboola\DbWriter\WriterInterface;
 
 class Common extends Writer implements WriterInterface
 {
+    /** @var array */
     protected static $allowedTypes = [
         'int', 'smallint', 'bigint',
         'decimal', 'float', 'double',
         'date', 'datetime', 'timestamp',
-        'char', 'varchar', 'text', 'blob'
+        'char', 'varchar', 'text', 'blob',
     ];
 
     /** @var \PDO */
     protected $db;
 
-    public function createConnection($dbParams)
+    public function createConnection(array $dbParams): \PDO
     {
         // convert errors to PDOExceptions
         $options = [
             \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
-            \PDO::MYSQL_ATTR_LOCAL_INFILE => true
+            \PDO::MYSQL_ATTR_LOCAL_INFILE => true,
         ];
 
         // check params
@@ -50,18 +47,18 @@ class Common extends Writer implements WriterInterface
         return $pdo;
     }
 
-    public function generateTmpName($tableName)
+    public function generateTmpName(string $tableName): string
     {
         $tmpId = '_temp_' . uniqid();
         return mb_substr($tableName, 0, 64 - mb_strlen($tmpId)) . $tmpId;
     }
 
-    public function drop($tableName)
+    public function drop(string $tableName): void
     {
         $this->db->exec("DROP TABLE IF EXISTS `{$tableName}`;");
     }
 
-    public function create(array $table)
+    public function create(array $table): void
     {
         $sql = "CREATE TABLE `{$table['dbName']}` (";
 
@@ -93,7 +90,7 @@ class Common extends Writer implements WriterInterface
         $this->db->exec($sql);
     }
 
-    public function write(CsvFile $csvFile, array $table)
+    public function write(CsvFile $csvFile, array $table): void
     {
         $query = "
             LOAD DATA LOCAL INFILE '{$csvFile->getPathname()}'
@@ -109,12 +106,12 @@ class Common extends Writer implements WriterInterface
             $this->db->exec($query);
         } catch (\PDOException $e) {
             throw new UserException("Query failed: " . $e->getMessage(), 400, $e, [
-                'query' => $query
+                'query' => $query,
             ]);
         }
     }
 
-    public function upsert(array $table, $targetTable)
+    public function upsert(array $table, string $targetTable): void
     {
         $sourceTable = $table['dbName'];
 
@@ -162,7 +159,7 @@ class Common extends Writer implements WriterInterface
         $this->db->exec($query);
     }
 
-    public function tableExists($tableName)
+    public function tableExists(string $tableName): bool
     {
         $tableArr = explode('.', $tableName);
         $tableName = isset($tableArr[1])?$tableArr[1]:$tableArr[0];
@@ -172,7 +169,7 @@ class Common extends Writer implements WriterInterface
         return !empty($res);
     }
 
-    protected function getPlaceholders(array $row)
+    protected function getPlaceholders(array $row): string
     {
         $result = [];
         foreach ($row as $r) {
@@ -182,17 +179,17 @@ class Common extends Writer implements WriterInterface
         return implode(',', $result);
     }
 
-    public static function isTypeValid($type)
+    public static function isTypeValid(string $type): bool
     {
         return in_array(strtolower($type), static::$allowedTypes);
     }
 
-    public static function getAllowedTypes()
+    public static function getAllowedTypes(): array
     {
         return static::$allowedTypes;
     }
 
-    public function showTables($dbName)
+    public function showTables(string $dbName): array
     {
         $stmt = $this->db->query("SHOW TABLES");
         $res = $stmt->fetchAll(\PDO::FETCH_ASSOC);
@@ -202,13 +199,13 @@ class Common extends Writer implements WriterInterface
         }, $res);
     }
 
-    public function getTableInfo($tableName)
+    public function getTableInfo(string $tableName): array
     {
         $stmt = $this->db->query("DESCRIBE {$tableName}");
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 
-    public function validateTable($tableConfig)
+    public function validateTable(array $tableConfig): void
     {
         $tableInfo = $this->getTableInfo($tableConfig['dbName']);
 
@@ -242,7 +239,5 @@ class Common extends Writer implements WriterInterface
                 ));
             }
         }
-
-        return true;
     }
 }
