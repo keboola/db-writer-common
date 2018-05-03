@@ -1,9 +1,6 @@
 <?php
-/**
- * Created by Miroslav Čillík <miro@keboola.com>
- * Date: 05/09/14
- * Time: 12:53
- */
+
+declare(strict_types=1);
 
 namespace Keboola\DbWriter;
 
@@ -14,16 +11,19 @@ use Keboola\SSHTunnel\SSHException;
 
 abstract class Writer implements WriterInterface
 {
+    /** @var \PDO */
     protected $db;
 
+    /** @var bool */
     protected $async = false;
 
     /** @var Logger */
     protected $logger;
 
+    /** @var array */
     protected $dbParams;
 
-    public function __construct($dbParams, Logger $logger)
+    public function __construct(array $dbParams, Logger $logger)
     {
         $this->logger = $logger;
 
@@ -34,7 +34,7 @@ abstract class Writer implements WriterInterface
 
         try {
             $this->db = $this->createConnection($this->dbParams);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             if (strstr(strtolower($e->getMessage()), 'could not find driver')) {
                 throw new ApplicationException("Missing driver: " . $e->getMessage());
             }
@@ -42,7 +42,7 @@ abstract class Writer implements WriterInterface
         }
     }
 
-    public function createSshTunnel($dbConfig)
+    public function createSshTunnel(array $dbConfig): array
     {
         $sshConfig = $dbConfig['ssh'];
 
@@ -74,7 +74,7 @@ abstract class Writer implements WriterInterface
             :$sshConfig['keys']['#private'];
 
         $tunnelParams = array_intersect_key($sshConfig, array_flip([
-            'user', 'sshHost', 'sshPort', 'localPort', 'remoteHost', 'remotePort', 'privateKey'
+            'user', 'sshHost', 'sshPort', 'localPort', 'remoteHost', 'remotePort', 'privateKey',
         ]));
 
         $this->logger->info("Creating SSH tunnel to '" . $tunnelParams['sshHost'] . "'");
@@ -92,7 +92,7 @@ abstract class Writer implements WriterInterface
         return $dbConfig;
     }
 
-    public function getConnection()
+    public function getConnection(): \PDO
     {
         return $this->db;
     }

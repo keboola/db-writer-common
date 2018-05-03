@@ -1,20 +1,17 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: miroslavcillik
- * Date: 03/10/16
- * Time: 13:45
- */
+
+declare(strict_types=1);
 
 namespace Keboola\DbWriter\Configuration;
 
 use Keboola\DbWriter\Exception\UserException;
+use Symfony\Component\Config\Definition\ConfigurationInterface;
 use Symfony\Component\Config\Definition\Exception\Exception as ConfigException;
 use Symfony\Component\Config\Definition\Processor;
 
 class Validator
 {
-    public static function getValidator($definition)
+    public static function getValidator(ConfigurationInterface $definition): callable
     {
         return function ($parameters) use ($definition) {
             try {

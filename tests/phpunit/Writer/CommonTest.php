@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DbWriter\Tests\Writer;
 
 use Keboola\Csv\CsvFile;
@@ -13,9 +15,10 @@ class CommonTest extends BaseTest
     /** @var WriterInterface */
     protected $writer;
 
+    /** @var array */
     protected $config;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -31,7 +34,7 @@ class CommonTest extends BaseTest
         }
     }
 
-    public function testDrop()
+    public function testDrop(): void
     {
         $conn = $this->writer->getConnection();
         $conn->exec("CREATE TABLE dropMe (
@@ -55,7 +58,7 @@ class CommonTest extends BaseTest
         $this->assertFalse($tableExists);
     }
 
-    public function testCreate()
+    public function testCreate(): void
     {
         $tables = $this->config['parameters']['tables'];
 
@@ -80,7 +83,7 @@ class CommonTest extends BaseTest
         $this->assertTrue($tableExists);
     }
 
-    public function testWrite()
+    public function testWrite(): void
     {
         $tables = $this->config['parameters']['tables'];
 
@@ -105,7 +108,7 @@ class CommonTest extends BaseTest
         $this->assertFileEquals($sourceFilename, $resFilename);
     }
 
-    public function testUpsert()
+    public function testUpsert(): void
     {
         $conn = $this->writer->getConnection();
         $tables = $this->config['parameters']['tables'];
@@ -140,7 +143,7 @@ class CommonTest extends BaseTest
         $this->assertFileEquals($expectedFilename, $resFilename);
     }
 
-    public function testGetAllowedTypes()
+    public function testGetAllowedTypes(): void
     {
         $allowedTypes = $this->writer->getAllowedTypes();
 
@@ -148,11 +151,11 @@ class CommonTest extends BaseTest
             'int', 'smallint', 'bigint',
             'decimal', 'float', 'double',
             'date', 'datetime', 'timestamp',
-            'char', 'varchar', 'text', 'blob'
+            'char', 'varchar', 'text', 'blob',
         ], $allowedTypes);
     }
 
-    public function testShowTables()
+    public function testShowTables(): void
     {
         foreach ($this->config['parameters']['tables'] as $table) {
             $this->writer->create($table);
@@ -164,7 +167,7 @@ class CommonTest extends BaseTest
         }
     }
 
-    public function testGetTableInfo()
+    public function testGetTableInfo(): void
     {
         $table = $this->config['parameters']['tables'][0];
         $this->writer->create($table);
@@ -175,7 +178,7 @@ class CommonTest extends BaseTest
         $this->assertEquals('varchar(255)', $tableInfo[0]['Type']);
     }
 
-    public function testGenerateTmpName()
+    public function testGenerateTmpName(): void
     {
         $tableName = 'firstTable';
 
@@ -191,13 +194,13 @@ class CommonTest extends BaseTest
         $this->assertLessThanOrEqual(64, mb_strlen($tmpName));
     }
 
-    public function testValidateTable()
+    public function testValidateTable(): void
     {
         $table = $this->config['parameters']['tables'][0];
         $this->writer->create($table);
 
-        $res = $this->writer->validateTable($table);
+        $this->writer->validateTable($table);
 
-        $this->assertTrue($res);
+        $this->assertTrue(true);
     }
 }

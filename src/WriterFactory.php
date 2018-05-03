@@ -1,29 +1,23 @@
 <?php
-/**
- * Created by Miroslav Čillík <miro@keboola.com>
- * Date: 25/05/15
- * Time: 15:19
- */
+
+declare(strict_types=1);
 
 namespace Keboola\DbWriter;
 
 use Keboola\DbWriter\Exception\UserException;
+use Monolog\Logger;
 
 class WriterFactory
 {
+    /** @var array */
     private $parameters;
 
-    public function __construct($parameters)
+    public function __construct(array $parameters)
     {
         $this->parameters = $parameters;
     }
 
-    /**
-     * @param $logger
-     * @return WriterInterface
-     * @throws UserException
-     */
-    public function create($logger)
+    public function create(Logger $logger): WriterInterface
     {
         $writerClass = __NAMESPACE__ . '\\Writer\\' . $this->parameters['writer_class'];
         if (!class_exists($writerClass)) {

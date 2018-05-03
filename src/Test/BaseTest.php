@@ -1,18 +1,23 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DbWriter\Test;
 
 use Keboola\DbWriter\Logger;
 use Keboola\DbWriter\WriterFactory;
+use Keboola\DbWriter\WriterInterface;
 use PHPUnit\Framework\TestCase;
 
 class BaseTest extends TestCase
 {
+    /** @var string */
     protected $dataDir = __DIR__ . "/../../tests/data";
 
+    /** @var string */
     protected $appName = 'wr-db-common-tests';
 
-    protected function getConfig()
+    protected function getConfig(): array
     {
         $config = json_decode(file_get_contents($this->dataDir . '/config.json'), true);
         $config['parameters']['data_dir'] = $this->dataDir;
@@ -25,7 +30,7 @@ class BaseTest extends TestCase
         return $config;
     }
 
-    protected function getEnv($name, $required = false)
+    protected function getEnv(string $name, bool $required = false): string
     {
         $env = strtoupper($name);
         if ($required) {
@@ -36,14 +41,14 @@ class BaseTest extends TestCase
         return getenv($env);
     }
 
-    protected function getWriter($parameters)
+    protected function getWriter(array $parameters): WriterInterface
     {
         $writerFactory = new WriterFactory($parameters);
 
         return $writerFactory->create(new Logger($this->appName));
     }
 
-    public function getPrivateKey()
+    public function getPrivateKey(): string
     {
         // docker-compose .env file does not support new lines in variables so we have to modify the key https://github.com/moby/moby/issues/12997
         return str_replace('"', '', str_replace('\n', "\n", $this->getEnv('SSH_KEY_PRIVATE')));
