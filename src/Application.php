@@ -11,10 +11,11 @@ use Keboola\DbWriter\Configuration\Validator;
 use Keboola\DbWriter\Exception\ApplicationException;
 use Keboola\DbWriter\Exception\UserException;
 use Pimple\Container;
+use Symfony\Component\Config\Definition\ConfigurationInterface;
 
 class Application extends Container
 {
-    public function __construct(array $config, Logger $logger, ?ConfigDefinition $configDefinition = null)
+    public function __construct(array $config, Logger $logger, ?ConfigurationInterface $configDefinition = null)
     {
         parent::__construct();
 
