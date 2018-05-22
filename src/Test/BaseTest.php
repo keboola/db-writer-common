@@ -8,19 +8,28 @@ use Keboola\DbWriter\Logger;
 use Keboola\DbWriter\WriterFactory;
 use Keboola\DbWriter\WriterInterface;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Process\Process;
 
 class BaseTest extends TestCase
 {
     /** @var string */
-    protected $dataDir = __DIR__ . "/../../tests/data";
+    private $rootDir = __DIR__ . '/../../';
+
+    /** @var string */
+    protected $dataDir = __DIR__ . '/../../tests/data';
+
+    /** @var string */
+    protected $tmpDataDir = '/tmp/wr-db/data';
 
     /** @var string */
     protected $appName = 'wr-db-common-tests';
 
-    protected function getConfig(): array
+    protected function getConfig(?string $dataDir = null): array
     {
-        $config = json_decode(file_get_contents($this->dataDir . '/config.json'), true);
-        $config['parameters']['data_dir'] = $this->dataDir;
+        $dataDir = $dataDir ?: $this->dataDir;
+        $config = json_decode(file_get_contents($dataDir . '/config.json'), true);
+        $config['parameters']['data_dir'] = $dataDir;
         $config['parameters']['db']['user'] = $this->getEnv('DB_USER', true);
         $config['parameters']['db']['#password'] = $this->getEnv('DB_PASSWORD', true);
         $config['parameters']['db']['host'] = $this->getEnv('DB_HOST');
@@ -52,5 +61,27 @@ class BaseTest extends TestCase
     {
         // docker-compose .env file does not support new lines in variables so we have to modify the key https://github.com/moby/moby/issues/12997
         return str_replace('"', '', str_replace('\n', "\n", $this->getEnv('SSH_KEY_PRIVATE')));
+    }
+
+    public function initFixtures(array $config, ?string $sourceDataDir = null): void
+    {
+        $dataDir = $sourceDataDir ?: $this->dataDir;
+
+        $fs = new Filesystem();
+        if ($fs->exists($this->tmpDataDir)) {
+            $fs->remove($this->tmpDataDir);
+        }
+        $fs->mkdir($this->tmpDataDir);
+        $fs->dumpFile($this->tmpDataDir . '/config.json', json_encode($config));
+        $fs->mirror($dataDir . '/in/tables', $this->tmpDataDir . '/in/tables');
+    }
+
+    protected function runProcess(): Process
+    {
+        $process = new Process(sprintf('php %srun.php --data=%s 2>&1', $this->rootDir, $this->tmpDataDir));
+        $process->setTimeout(300);
+        $process->mustRun();
+
+        return $process;
     }
 }

@@ -34,7 +34,7 @@ class ApplicationTest extends BaseTest
 
     public function testRun(): void
     {
-        $this->runApp($this->getApp($this->config));
+        $this->runApplication($this->getApp($this->config));
     }
 
     public function testRunWithSSH(): void
@@ -57,7 +57,7 @@ class ApplicationTest extends BaseTest
             'remotePort' => '3306',
         ];
 
-        $this->runApp($this->getApp($config, $logger));
+        $this->runApplication($this->getApp($config, $logger));
 
         $records = $testHandler->getRecords();
         $record = reset($records);
@@ -101,12 +101,12 @@ class ApplicationTest extends BaseTest
         $simpleTableCfg['items'][1] = $firstCol;
         $this->config['parameters']['tables'][1] = $simpleTableCfg;
 
-        $this->runApp($this->getApp($this->config));
+        $this->runApplication($this->getApp($this->config));
     }
 
     public function testGetTablesInfo(): void
     {
-        $this->runApp($this->getApp($this->config));
+        $this->runApplication($this->getApp($this->config));
 
         $config = $this->config;
         $config['action'] = 'getTablesInfo';
@@ -121,7 +121,7 @@ class ApplicationTest extends BaseTest
         return new Application($config, $logger ?: new Logger($this->appName));
     }
 
-    protected function runApp(Application $app): void
+    protected function runApplication(Application $app): void
     {
         $result = $app->run();
 
