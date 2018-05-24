@@ -118,7 +118,7 @@ class ApplicationTest extends BaseTest
 
     protected function getApp(array $config, ?Logger $logger = null): Application
     {
-        return new Application($config, $logger ?: new Logger($this->appName));
+        return new Application($config, $logger ?: new Logger($this->appName, true));
     }
 
     protected function runApplication(Application $app): void
