@@ -10,11 +10,7 @@ use Monolog\Logger as MonologLogger;
 
 class Logger extends MonologLogger
 {
-    /**
-     * @param string $name
-     * @param bool $debug - DEPRECATED - has no effect
-     */
-    public function __construct(string $name = '', bool $debug = false)
+    public function __construct(string $name = '')
     {
         parent::__construct(
             $name,
