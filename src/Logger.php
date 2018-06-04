@@ -30,7 +30,7 @@ class Logger extends MonologLogger
     {
         $errorHandler = new StreamHandler('php://stderr');
         $errorHandler->setBubble(false);
-        $errorHandler->setLevel(MonologLogger::NOTICE);
+        $errorHandler->setLevel(MonologLogger::WARNING);
         $errorHandler->setFormatter(new LineFormatter("%message%\n"));
         return $errorHandler;
     }
