@@ -60,7 +60,11 @@ class Common extends Writer implements WriterInterface
 
     public function create(array $table): void
     {
-        $sql = "CREATE TABLE `{$table['dbName']}` (";
+        $sql = sprintf(
+            "CREATE %s TABLE `%s` (",
+            isset($table['temporary']) && $table['temporary'] === true ? 'TEMPORARY' : '',
+            $table['dbName']
+        );
 
         $columns = $table['items'];
         foreach ($columns as $k => $col) {
