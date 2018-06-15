@@ -105,6 +105,7 @@ class Application extends Container
         // write to staging table
         $stageTable = $tableConfig;
         $stageTable['dbName'] = $writer->generateTmpName($tableConfig['dbName']);
+        $stageTable['temporary'] = true;
 
         $writer->drop($stageTable['dbName']);
         $writer->create($stageTable);
