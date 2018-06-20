@@ -17,7 +17,7 @@ class Logger extends MonologLogger
             [
                 self::getCriticalHandler(),
                 self::getErrorHandler(),
-                self::getInfoHandler()
+                self::getInfoHandler(),
             ]
         );
     }
