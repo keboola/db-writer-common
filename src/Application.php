@@ -88,7 +88,7 @@ class Application extends Container
         $csv = $this->getInputCsv($tableConfig['tableId']);
         $tableConfig['items'] = $this->reorderColumns($csv, $tableConfig['items']);
 
-        if (empty($tableConfig['items'])) {
+        if (empty($tableConfig['items']) || !$tableConfig['export']) {
             return;
         }
 
