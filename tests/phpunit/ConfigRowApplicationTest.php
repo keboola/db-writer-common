@@ -66,7 +66,7 @@ class ConfigRowApplicationTest extends BaseTest
             'enabled' => true,
             'keys' => [
                 '#private' => $this->getPrivateKey(),
-                'public' => $this->getEnv('SSH_KEY_PUBLIC'),
+                'public' => $this->getPublicKey(),
             ],
             'sshHost' => 'sshproxy',
             'localPort' => '33306',
@@ -101,7 +101,7 @@ class ConfigRowApplicationTest extends BaseTest
             'enabled' => true,
             'keys' => [
                 '#private' => $this->getPrivateKey(),
-                'public' => $this->getEnv('SSH_KEY_PUBLIC'),
+                'public' => $this->getPublicKey(),
             ],
             'sshHost' => 'hereBeDragons',
             'localPort' => '33306',
