@@ -1,4 +1,4 @@
-FROM db-ex-common-sshproxy AS sshproxy
+FROM db-wr-common-sshproxy AS sshproxy
 FROM php:7-cli
 
 # Env vars
