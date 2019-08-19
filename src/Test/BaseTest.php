@@ -59,8 +59,12 @@ class BaseTest extends TestCase
 
     public function getPrivateKey(): string
     {
-        // docker-compose .env file does not support new lines in variables so we have to modify the key https://github.com/moby/moby/issues/12997
-        return str_replace('"', '', str_replace('\n', "\n", $this->getEnv('SSH_KEY_PRIVATE')));
+        return file_get_contents('/root/.ssh/id_rsa');
+    }
+
+    public function getPublicKey(): string
+    {
+        return file_get_contents('/root/.ssh/id_rsa.pub');
     }
 
     public function initFixtures(array $config, ?string $sourceDataDir = null): void
