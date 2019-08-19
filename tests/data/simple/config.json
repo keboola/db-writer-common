@@ -1,0 +1,46 @@
+{
+  "parameters": {
+    "writer_class": "Common",
+    "db": {
+      "driver": "mysql",
+      "host": "mysql",
+      "port": 3306,
+      "database": "dbtest",
+      "user": "root",
+      "password": null
+    },
+    "tableId": "simple",
+    "dbName": "simple",
+    "export": true,
+    "incremental": true,
+    "primaryKey": [
+      "id"
+    ],
+    "items": [
+      {
+        "name": "id",
+        "dbName": "id",
+        "type": "int",
+        "size": null,
+        "nullable": null,
+        "default": null
+      },
+      {
+        "name": "name",
+        "dbName": "name",
+        "type": "VARCHAR",
+        "size": 255,
+        "nullable": null,
+        "default": null
+      },
+      {
+        "name": "glasses",
+        "dbName": "glasses",
+        "type": "VARCHAR",
+        "size": 20,
+        "nullable": null,
+        "default": null
+      }
+    ]
+  }
+}
