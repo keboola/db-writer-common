@@ -1,3 +1,4 @@
+FROM db-ex-common-sshproxy AS sshproxy
 FROM php:7-cli
 
 # Env vars
@@ -22,5 +23,7 @@ ADD . /code
 WORKDIR /code
 COPY docker/php-prod.ini /usr/local/etc/php/php.ini
 RUN composer selfupdate && composer install --no-interaction
+
+COPY --from=sshproxy /root/.ssh /root/.ssh
 
 CMD php ./vendor/bin/phpunit

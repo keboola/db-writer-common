@@ -13,8 +13,6 @@ services:
       DB_HOST: mysql
       DB_PORT: 3306
       DB_DATABASE: testdb
-      SSH_KEY_PRIVATE: ${SSH_KEY_PRIVATE}
-      SSH_KEY_PUBLIC: ${SSH_KEY_PUBLIC}
     depends_on:
       - sshproxy
       - mysql
@@ -35,9 +33,7 @@ services:
 
   sshproxy:
     build: ./tests/env/sshproxy
-    command: sh -c 'echo $SSH_KEY_PUBLIC >> ~/.ssh/authorized_keys && /usr/sbin/sshd -D'
-    environment:
-      - SSH_KEY_PUBLIC
+    image: db-wr-common-sshproxy
     ports:
       - "2222:22"
     links:
