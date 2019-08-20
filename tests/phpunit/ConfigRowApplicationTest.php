@@ -38,6 +38,7 @@ class ConfigRowApplicationTest extends BaseTest
         return [
             [
                 'simple'=> __DIR__ . '/../data/simple',
+            ], [
                 'encoding'=> __DIR__ . '/../data/encoding',
             ],
         ];
@@ -51,15 +52,14 @@ class ConfigRowApplicationTest extends BaseTest
         $result = $this->runApplication($this->getApp($this->getConfig($datadir)));
     }
 
-    /**
-     * @dataProvider dataDirProvider
-     */
-    public function testRunWithSSH(string $datadir): void
+    public function testRunWithSSH(): void
     {
         $testHandler = new TestHandler();
 
         $logger = new Logger($this->appName);
         $logger->setHandlers([$testHandler]);
+
+        $datadir = __DIR__ . '/../data/encoding';
 
         $config = $this->getConfig($datadir);
         $config['parameters']['db']['ssh'] = [
@@ -69,7 +69,7 @@ class ConfigRowApplicationTest extends BaseTest
                 'public' => $this->getPublicKey(),
             ],
             'sshHost' => 'sshproxy',
-            'localPort' => '33306',
+            'localPort' => '33307',
             'remoteHost' => 'mysql',
             'remotePort' => '3306',
         ];
