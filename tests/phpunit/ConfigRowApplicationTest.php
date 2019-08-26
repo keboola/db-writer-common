@@ -37,9 +37,19 @@ class ConfigRowApplicationTest extends BaseTest
     {
         return [
             [
-                'simple'=> __DIR__ . '/../data/simple',
+                'encoding'=> [
+                    'datadir' => __DIR__ . '/../data/encoding',
+                    'inputFile' => 'encoding.csv',
+                    'outputTable' => 'encoding',
+                    'header' => ['col1', 'col2'],
+                ],
             ], [
-                'encoding'=> __DIR__ . '/../data/encoding',
+                'simple'=> [
+                    'datadir' => __DIR__ . '/../data/simple',
+                    'inputFile' => 'simple.csv',
+                    'outputTable' => 'simple',
+                    'header' => ['id', 'name', 'glasses'],
+                ],
             ],
         ];
     }
@@ -47,9 +57,14 @@ class ConfigRowApplicationTest extends BaseTest
     /**
      * @dataProvider dataDirProvider
      */
-    public function testRun(string $datadir): void
+    public function testRun(array $dataDefinition): void
     {
-        $result = $this->runApplication($this->getApp($this->getConfig($datadir)));
+        $result = $this->runApplication(
+            $this->getApp($this->getConfig($dataDefinition['datadir'])),
+            $dataDefinition['inputFile'],
+            $dataDefinition['outputTable'],
+            $dataDefinition['header']
+        );
     }
 
     public function testRunWithSSH(): void
@@ -74,7 +89,12 @@ class ConfigRowApplicationTest extends BaseTest
             'remotePort' => '3306',
         ];
 
-        $this->runApplication($this->getApp($config, $logger));
+        $this->runApplication(
+            $this->getApp($config, $logger),
+            'encoding.csv',
+            'encoding',
+            ['col1', 'col2']
+        );
 
         $records = $testHandler->getRecords();
         $record = reset($records);
@@ -91,12 +111,12 @@ class ConfigRowApplicationTest extends BaseTest
     /**
      * @dataProvider dataDirProvider
      */
-    public function testRunWithSSHException(string $datadir): void
+    public function testRunWithSSHException(array $dataDefinition): void
     {
         $this->expectException('Keboola\DbWriter\Exception\UserException');
         $this->expectExceptionMessageRegExp('/Could not resolve hostname herebedragons/ui');
 
-        $config = $this->getConfig($datadir);
+        $config = $this->getConfig($dataDefinition['datadir']);
         $config['parameters']['db']['ssh'] = [
             'enabled' => true,
             'keys' => [
@@ -112,21 +132,40 @@ class ConfigRowApplicationTest extends BaseTest
         $this->getApp($config)->run();
     }
 
-    public function testRunReorderColumns(): void
+    /**
+     * @dataProvider dataDirProvider
+     * @param array $dataDefinition
+     */
+    public function testRunReorderColumns(array $dataDefinition): void
     {
-        $simpleTableCfg = $this->config['parameters']['tables'][1];
-        $firstCol = $simpleTableCfg['items'][0];
-        $secondCol = $simpleTableCfg['items'][1];
-        $simpleTableCfg['items'][0] = $secondCol;
-        $simpleTableCfg['items'][1] = $firstCol;
-        $this->config['parameters']['tables'][1] = $simpleTableCfg;
+        $this->config = $this->getConfig($dataDefinition['datadir']);
+        $configParams = $this->config['parameters'];
+        $firstCol = $configParams['items'][0];
+        $secondCol = $configParams['items'][1];
+        $configParams['items'][0] = $secondCol;
+        $configParams['items'][1] = $firstCol;
+        $this->config['parameters'] = $configParams;
 
-        $this->runApplication($this->getApp($this->config));
+        $this->runApplication(
+            $this->getApp($this->config),
+            $dataDefinition['inputFile'],
+            $dataDefinition['outputTable'],
+            $dataDefinition['header']
+        );
     }
 
-    public function testGetTablesInfo(): void
+    /**
+     * @dataProvider dataDirProvider
+     * @param array $dataDefinition
+     */
+    public function testGetTablesInfo(array $dataDefinition): void
     {
-        $this->runApplication($this->getApp($this->config));
+        $this->runApplication(
+            $this->getApp($this->config),
+            $dataDefinition['inputFile'],
+            $dataDefinition['outputTable'],
+            $dataDefinition['header']
+        );
 
         $config = $this->config;
         $config['action'] = 'getTablesInfo';
@@ -141,17 +180,17 @@ class ConfigRowApplicationTest extends BaseTest
         return new Application($config, $logger ?: new Logger($this->appName));
     }
 
-    protected function runApplication(Application $app): string
+    protected function runApplication(Application $app, String $inputFile, String $outputTable, array $header): string
     {
-        return $app->run();
-        /*
-        $encodingIn = $this->dataDir . '/in/tables/encoding.csv';
-        $encodingOut = $this->dbTableToCsv($app['writer']->getConnection(), 'encoding', ['col1', 'col2']);
+        $result = $app->run();
+
+        $encodingIn = $this->dataDir . '/in/tables/' . $inputFile;
+        $encodingOut = $this->dbTableToCsv($app['writer']->getConnection(), $outputTable, $header);
 
         $this->assertEquals('Writer finished successfully', $result);
         $this->assertFileExists($encodingOut->getPathname());
         $this->assertEquals(file_get_contents($encodingIn), file_get_contents($encodingOut->getPathname()));
-        */
+        return $result;
     }
 
     protected function dbTableToCsv(\PDO $conn, string $tableName, array $header): CsvFile
@@ -165,7 +204,6 @@ class ConfigRowApplicationTest extends BaseTest
         foreach ($res as $row) {
             $csv->writeRow($row);
         }
-
         return $csv;
     }
 }
