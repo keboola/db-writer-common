@@ -17,7 +17,7 @@ class BaseTest extends TestCase
     private $rootDir = __DIR__ . '/../../';
 
     /** @var string */
-    protected $dataDir = __DIR__ . '/../../tests/data';
+    protected $dataDir = __DIR__ . '/../../tests/data/deprecated';
 
     /** @var string */
     protected $tmpDataDir = '/tmp/wr-db/data';

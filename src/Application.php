@@ -7,6 +7,7 @@ namespace Keboola\DbWriter;
 use ErrorException;
 use Keboola\Csv\CsvFile;
 use Keboola\DbWriter\Configuration\ConfigDefinition;
+use Keboola\DbWriter\Configuration\ConfigRowDefinition;
 use Keboola\DbWriter\Configuration\Validator;
 use Keboola\DbWriter\Exception\ApplicationException;
 use Keboola\DbWriter\Exception\UserException;
@@ -24,7 +25,11 @@ class Application extends Container
         static::setEnvironment();
 
         if ($configDefinition == null) {
-            $configDefinition = new ConfigDefinition();
+            if (isset($config['parameters']['tables'])) {
+                $configDefinition = new ConfigDefinition();
+            } else {
+                $configDefinition = new ConfigRowDefinition();
+            }
         }
         $validate = Validator::getValidator($configDefinition);
 
@@ -64,37 +69,44 @@ class Application extends Container
 
     public function runAction(): string
     {
-        $tables = array_filter($this['parameters']['tables'], function ($table) {
-            return ($table['export']);
-        });
-
-        foreach ($tables as $tableConfig) {
-            $csv = $this->getInputCsv($tableConfig['tableId']);
-            $tableConfig['items'] = $this->reorderColumns($csv, $tableConfig['items']);
-
-            if (empty($tableConfig['items'])) {
-                continue;
+        if (isset($this['parameters']['tables'])) {
+            $tables = array_filter($this['parameters']['tables'], function ($table) {
+                return ($table['export']);
+            });
+            foreach ($tables as $tableConfig) {
+                $this->runWriteTable($tableConfig);
             }
-
-            try {
-                if ($tableConfig['incremental']) {
-                    $this->writeIncremental($csv, $tableConfig);
-                    continue;
-                }
-
-                $this->writeFull($csv, $tableConfig);
-            } catch (\PDOException $e) {
-                $this['logger']->error($e->getMessage());
-                throw new UserException($e->getMessage(), 0, $e);
-            } catch (UserException $e) {
-                $this['logger']->error($e->getMessage());
-                throw $e;
-            } catch (\Throwable $e) {
-                throw new ApplicationException($e->getMessage(), 2, $e);
-            }
+        } else {
+            $this->runWriteTable($this['parameters']);
         }
 
         return "Writer finished successfully";
+    }
+
+    private function runWriteTable(array $tableConfig): void
+    {
+        $csv = $this->getInputCsv($tableConfig['tableId']);
+        $tableConfig['items'] = $this->reorderColumns($csv, $tableConfig['items']);
+
+        if (empty($tableConfig['items']) || !$tableConfig['export']) {
+            return;
+        }
+
+        try {
+            if ($tableConfig['incremental']) {
+                $this->writeIncremental($csv, $tableConfig);
+            } else {
+                $this->writeFull($csv, $tableConfig);
+            }
+        } catch (\PDOException $e) {
+            $this['logger']->error($e->getMessage());
+            throw new UserException($e->getMessage(), 0, $e);
+        } catch (UserException $e) {
+            $this['logger']->error($e->getMessage());
+            throw $e;
+        } catch (\Throwable $e) {
+            throw new ApplicationException($e->getMessage(), 2, $e);
+        }
     }
 
     public function writeIncremental(CsvFile $csv, array $tableConfig): void

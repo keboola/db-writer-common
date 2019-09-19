@@ -1,0 +1,36 @@
+{
+  "parameters": {
+    "writer_class": "Common",
+    "db": {
+      "driver": "mysql",
+      "host": "mysql",
+      "port": 3306,
+      "database": "dbtest",
+      "user": "root",
+      "password": null
+    },
+    "tableId": "encoding",
+    "dbName": "encoding",
+    "export": true,
+    "incremental": false,
+    "primaryKey": [],
+    "items": [
+      {
+        "name": "col1",
+        "dbName": "col1",
+        "type": "VARCHAR",
+        "size": 255,
+        "nullable": null,
+        "default": null
+      },
+      {
+        "name": "col2",
+        "dbName": "col2",
+        "type": "VARCHAR",
+        "size": 255,
+        "nullable": null,
+        "default": null
+      }
+    ]
+  }
+}
