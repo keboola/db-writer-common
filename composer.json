@@ -12,11 +12,15 @@
   ],
   "require": {
     "php": "^7.1",
+    "ext-PDO": "*",
+    "ext-json": "*",
+    "ext-mbstring": "*",
     "keboola/csv": "^1.1",
     "keboola/ssh-tunnel": "^1.0",
     "monolog/monolog": "^1.17",
     "pimple/pimple": "^3.0",
     "symfony/config": "^4.0",
+    "symfony/filesystem": "^4.3",
     "symfony/process": "^3.0"
   },
   "require-dev": {
