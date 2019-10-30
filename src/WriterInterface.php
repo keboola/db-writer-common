@@ -8,8 +8,8 @@ use Keboola\Csv\CsvFile;
 
 interface WriterInterface
 {
-    public function getConnection(): \PDO;
-    public function createConnection(array $dbParams): \PDO;
+    public function getConnection();
+    public function createConnection(array $dbParams);
     public function write(CsvFile $csv, array $table): void;
     public function drop(string $tableName): void;
     public function create(array $table): void;
