@@ -7,8 +7,5 @@
     </rule>
     <rule ref="SlevomatCodingStandard.TypeHints.TypeHintDeclaration.MissingReturnTypeHint">
         <exclude-pattern>src/Logger/LineFormatter.php</exclude-pattern>
-        <exclude-pattern>src/Writer/Common.php</exclude-pattern>
-        <exclude-pattern>src/WriterInterface.php</exclude-pattern>
-        <exclude-pattern>src/Writer.php</exclude-pattern>
     </rule>
 </ruleset>
