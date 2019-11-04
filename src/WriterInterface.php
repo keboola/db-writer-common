@@ -8,7 +8,15 @@ use Keboola\Csv\CsvFile;
 
 interface WriterInterface
 {
+    /**
+     * @return mixed
+     */
     public function getConnection();
+
+    /**
+     * @param array $dbParams
+     * @return mixed
+     */
     public function createConnection(array $dbParams);
     public function write(CsvFile $csv, array $table): void;
     public function drop(string $tableName): void;

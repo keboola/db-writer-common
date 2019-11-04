@@ -22,6 +22,11 @@ class Common extends Writer implements WriterInterface
     /** @var \PDO */
     protected $db;
 
+    /**
+     * @param array $dbParams
+     * @return mixed
+     * @throws UserException
+     */
     public function createConnection(array $dbParams)
     {
         // convert errors to PDOExceptions

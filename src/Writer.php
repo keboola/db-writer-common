@@ -92,6 +92,9 @@ abstract class Writer implements WriterInterface
         return $dbConfig;
     }
 
+    /**
+     * @return mixed
+     */
     public function getConnection()
     {
         return $this->db;
