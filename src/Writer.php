@@ -92,7 +92,10 @@ abstract class Writer implements WriterInterface
         return $dbConfig;
     }
 
-    public function getConnection(): \PDO
+    /**
+     * @return mixed
+     */
+    public function getConnection()
     {
         return $this->db;
     }
