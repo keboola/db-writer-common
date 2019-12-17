@@ -1,4 +1,4 @@
-FROM db-wr-common-sshproxy AS sshproxy
+FROM keboola/db-component-ssh-proxy:latest AS sshproxy
 FROM php:7-cli
 
 # Env vars
