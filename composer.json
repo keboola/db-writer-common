@@ -21,7 +21,7 @@
     "pimple/pimple": "^3.0",
     "symfony/config": "^4.0",
     "symfony/filesystem": "^4.3",
-    "symfony/process": "^3.0"
+    "symfony/process": "^3.0 || ^4.0"
   },
   "require-dev": {
     "keboola/coding-standard": "^2.0",
