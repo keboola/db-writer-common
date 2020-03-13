@@ -83,7 +83,7 @@ class Application extends Container
         return "Writer finished successfully";
     }
 
-    private function runWriteTable(array $tableConfig): void
+    protected function runWriteTable(array $tableConfig): void
     {
         $csv = $this->getInputCsv($tableConfig['tableId']);
         $tableConfig['items'] = $this->reorderColumns($csv, $tableConfig['items']);
@@ -99,10 +99,8 @@ class Application extends Container
                 $this->writeFull($csv, $tableConfig);
             }
         } catch (\PDOException $e) {
-            $this['logger']->error($e->getMessage());
             throw new UserException($e->getMessage(), 0, $e);
         } catch (UserException $e) {
-            $this['logger']->error($e->getMessage());
             throw $e;
         } catch (\Throwable $e) {
             throw new ApplicationException($e->getMessage(), 2, $e);
