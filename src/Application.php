@@ -88,12 +88,13 @@ class Application extends Container
         $csv = $this->getInputCsv($tableConfig['tableId']);
         $tableConfig['items'] = $this->reorderColumns($csv, $tableConfig['items']);
 
-        if (empty($tableConfig['items']) || !$tableConfig['export']) {
+        $export = isset($tableConfig['export']) ? $tableConfig['export'] : true;
+        if (empty($tableConfig['items']) || $export === false) {
             return;
         }
 
         try {
-            if ($tableConfig['incremental']) {
+            if (isset($tableConfig['incremental']) && $tableConfig['incremental']) {
                 $this->writeIncremental($csv, $tableConfig);
             } else {
                 $this->writeFull($csv, $tableConfig);
