@@ -36,11 +36,8 @@ class Application extends Container
         $this['action'] = isset($config['action'])?$config['action']:'run';
         $this['parameters'] = $validate($config['parameters']);
         $this['logger'] = $logger;
-        $this['writer_factory'] = function () use ($app) {
-            return new WriterFactory($app['parameters']);
-        };
         $this['writer'] = function () use ($app) {
-            return $app['writer_factory']->create($app['logger']);
+            return $this->getWriterFactory($app['parameters'])->create($app['logger']);
         };
     }
 
@@ -192,5 +189,10 @@ class Application extends Container
             'status' => 'success',
             'tables' => $tablesInfo,
         ]);
+    }
+
+    protected function getWriterFactory(array $parameters): WriterFactory
+    {
+        return new WriterFactory($parameters);
     }
 }
