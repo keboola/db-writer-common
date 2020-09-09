@@ -33,12 +33,7 @@ class Application extends Container
         }
         $validate = Validator::getValidator($configDefinition);
 
-        $inputMapping = $config['storage']['input'] ?? null;
-        if (!$inputMapping) {
-            throw new ApplicationException('Missing storage input mapping.');
-        }
-
-        $this['inputMapping'] = $inputMapping;
+        $this['inputMapping'] = $config['storage']['input'] ?? null;
         $this['action'] = isset($config['action'])?$config['action']:'run';
         $this['parameters'] = $validate($config['parameters']);
         $this['logger'] = $logger;
@@ -166,7 +161,12 @@ class Application extends Container
 
     protected function getInputCsv(string $tableId): CsvFile
     {
-        $filteredStorageInputMapping = array_filter($this['inputMapping']['tables'], function ($v) use ($tableId) {
+        $inputMapping = $this['inputMapping'];
+        if (!$inputMapping) {
+            throw new ApplicationException('Missing storage input mapping.');
+        }
+
+        $filteredStorageInputMapping = array_filter($inputMapping['tables'], function ($v) use ($tableId) {
             return $v['source'] === $tableId;
         });
 
