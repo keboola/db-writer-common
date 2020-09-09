@@ -21,7 +21,8 @@ class ApplicationTest extends BaseTest
     {
         parent::setUp();
         $validate = Validator::getValidator(new ConfigDefinition());
-        $this->config['parameters'] = $validate($this->getConfig()['parameters']);
+        $this->config = $this->getConfig();
+        $this->config['parameters'] = $validate($this->config['parameters']);
 
         $writer = $this->getWriter($this->config['parameters']);
         $conn = $writer->getConnection();

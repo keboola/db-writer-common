@@ -32,5 +32,21 @@
         "default": null
       }
     ]
+  },
+  "storage": {
+    "input": {
+      "tables": [
+        {
+          "source": "encoding",
+          "destination": "encoding.csv",
+          "columns": [
+            "id",
+            "name",
+            "glasses",
+            "age"
+          ]
+        }
+      ]
+    }
   }
 }
