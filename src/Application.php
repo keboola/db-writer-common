@@ -33,6 +33,12 @@ class Application extends Container
         }
         $validate = Validator::getValidator($configDefinition);
 
+        $inputMapping = $config['storage']['input'] ?? null;
+        if (!$inputMapping) {
+            throw new ApplicationException('Missing storage input mapping.');
+        }
+
+        $this['inputMapping'] = $inputMapping;
         $this['action'] = isset($config['action'])?$config['action']:'run';
         $this['parameters'] = $validate($config['parameters']);
         $this['logger'] = $logger;
@@ -160,7 +166,22 @@ class Application extends Container
 
     protected function getInputCsv(string $tableId): CsvFile
     {
-        return new CsvFile($this['parameters']['data_dir'] . "/in/tables/" . $tableId . ".csv");
+        $filteredStorageInputMapping = array_filter($this['inputMapping']['tables'], function ($v) use ($tableId) {
+            if ($v['source'] === $tableId) {
+                return true;
+            }
+            return false;
+        });
+
+        $filteredStorageInputMapping = array_values($filteredStorageInputMapping);
+
+        return new CsvFile(
+            sprintf(
+                '%s/in/tables/%s',
+                $this['parameters']['data_dir'],
+                $filteredStorageInputMapping[0]['destination']
+            )
+        );
     }
 
     public function testConnectionAction(): string
