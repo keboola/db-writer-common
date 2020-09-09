@@ -171,7 +171,9 @@ class Application extends Container
         });
 
         if (count($filteredStorageInputMapping) === 0) {
-            throw new UserException('Table in storage input mapping cannot be found.');
+            throw new UserException(
+                sprintf('Table "%s" in storage input mapping cannot be found.', $tableId)
+            );
         }
 
         $filteredStorageInputMapping = array_values($filteredStorageInputMapping);

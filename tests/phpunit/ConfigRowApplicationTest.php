@@ -183,7 +183,7 @@ class ConfigRowApplicationTest extends BaseTest
         $config['parameters']['tableId'] = 'invalidtable';
 
         $this->expectException(UserException::class);
-        $this->expectExceptionMessage('Table in storage input mapping cannot be found.');
+        $this->expectExceptionMessage('Table "invalidtable" in storage input mapping cannot be found.');
         $this->runApplication(
             $this->getApp($config),
             'encoding.csv',
