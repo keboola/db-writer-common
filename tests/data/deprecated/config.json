@@ -71,5 +71,31 @@
         ]
       }
     ]
+  },
+  "storage": {
+    "input": {
+      "tables": [
+        {
+          "source": "encoding",
+          "destination": "encoding.csv",
+          "columns": [
+            "id",
+            "name",
+            "glasses",
+            "age"
+          ]
+        },
+        {
+          "source": "simple",
+          "destination": "simple.csv",
+          "columns": [
+            "id",
+            "name",
+            "glasses",
+            "age"
+          ]
+        }
+      ]
+    }
   }
 }
