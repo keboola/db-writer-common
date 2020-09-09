@@ -9,6 +9,7 @@ use Keboola\DbWriter\Application;
 use Keboola\DbWriter\Configuration\ConfigDefinition;
 use Keboola\DbWriter\Configuration\ConfigRowDefinition;
 use Keboola\DbWriter\Configuration\Validator;
+use Keboola\DbWriter\Exception\UserException;
 use Keboola\DbWriter\Logger;
 use Keboola\DbWriter\Test\BaseTest;
 use Monolog\Handler\TestHandler;
@@ -174,6 +175,21 @@ class ConfigRowApplicationTest extends BaseTest
         $resultJson = json_decode($result, true);
 
         $this->assertContains('encoding', array_keys($resultJson['tables']));
+    }
+
+    public function testInvalidInputMapping(): void
+    {
+        $config = $this->getConfig(__DIR__ . '/../data/simple');
+        $config['parameters']['tableId'] = 'invalidtable';
+
+        $this->expectException(UserException::class);
+        $this->expectExceptionMessage('Table in storage input mapping cannot be found.');
+        $this->runApplication(
+            $this->getApp($config),
+            'encoding.csv',
+            'encoding',
+            ['col1', 'col2']
+        );
     }
 
     protected function getApp(array $config, ?Logger $logger = null): Application

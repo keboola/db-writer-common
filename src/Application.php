@@ -173,6 +173,10 @@ class Application extends Container
             return false;
         });
 
+        if (count($filteredStorageInputMapping) === 0) {
+            throw new UserException('Table in storage input mapping cannot be found.');
+        }
+
         $filteredStorageInputMapping = array_values($filteredStorageInputMapping);
 
         return new CsvFile(
