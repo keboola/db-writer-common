@@ -167,10 +167,7 @@ class Application extends Container
     protected function getInputCsv(string $tableId): CsvFile
     {
         $filteredStorageInputMapping = array_filter($this['inputMapping']['tables'], function ($v) use ($tableId) {
-            if ($v['source'] === $tableId) {
-                return true;
-            }
-            return false;
+            return $v['source'] === $tableId;
         });
 
         if (count($filteredStorageInputMapping) === 0) {
