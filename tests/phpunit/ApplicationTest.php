@@ -8,6 +8,7 @@ use Keboola\Csv\CsvFile;
 use Keboola\DbWriter\Application;
 use Keboola\DbWriter\Configuration\ConfigDefinition;
 use Keboola\DbWriter\Configuration\Validator;
+use Keboola\DbWriter\Exception\UserException;
 use Keboola\DbWriter\Logger;
 use Keboola\DbWriter\Test\BaseTest;
 use Monolog\Handler\TestHandler;
@@ -36,6 +37,44 @@ class ApplicationTest extends BaseTest
     public function testRun(): void
     {
         $this->runApplication($this->getApp($this->config));
+    }
+
+    public function testCheckHostname(): void
+    {
+        $testHandler = new TestHandler();
+
+        $logger = new Logger($this->appName);
+        $logger->setHandlers([$testHandler]);
+
+        $config = $this->config;
+        $config['image_parameters']['approveHostnames'] = [
+            [
+                'host' => $this->getEnv('DB_HOST'),
+                'port' => $this->getEnv('DB_PORT'),
+            ],
+        ];
+
+        $this->runApplication($this->getApp($config, $logger));
+    }
+
+    public function testCheckHostnameFailed(): void
+    {
+        $testHandler = new TestHandler();
+
+        $logger = new Logger($this->appName);
+        $logger->setHandlers([$testHandler]);
+
+        $config = $this->config;
+        $config['image_parameters']['approveHostnames'] = [
+            [
+                'host' => 'InvalidHostname',
+                'port' => 12344,
+            ],
+        ];
+
+        $this->expectException(UserException::class);
+        $this->expectExceptionMessage('Hostname "mysql" with port "3306" is not approved.');
+        $this->getApp($config, $logger)->run();
     }
 
     public function testRunWithSSH(): void
