@@ -77,6 +77,21 @@ class ApplicationTest extends BaseTest
         $this->getApp($config, $logger)->run();
     }
 
+    public function testCheckHostnameFailedEmptyArray(): void
+    {
+        $testHandler = new TestHandler();
+
+        $logger = new Logger($this->appName);
+        $logger->setHandlers([$testHandler]);
+
+        $config = $this->config;
+        $config['image_parameters']['approvedHostnames'] = [];
+
+        $this->expectException(UserException::class);
+        $this->expectExceptionMessage('Hostname "mysql" with port "3306" is not approved.');
+        $this->getApp($config, $logger)->run();
+    }
+
     public function testRunWithSSH(): void
     {
         $testHandler = new TestHandler();
