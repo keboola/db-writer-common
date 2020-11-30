@@ -20,9 +20,9 @@ class Application extends Container
     {
         parent::__construct();
 
-        if (!empty($config['image_parameters']['approveHostnames'])) {
+        if (!empty($config['image_parameters']['approvedHostnames'])) {
             $this->validateHostname(
-                $config['image_parameters']['approveHostnames'],
+                $config['image_parameters']['approvedHostnames'],
                 $config['parameters']['db']
             );
         }
@@ -227,9 +227,9 @@ class Application extends Container
         return new WriterFactory($parameters);
     }
 
-    private function validateHostname(array $approveHostnames, array $db): void
+    private function validateHostname(array $approvedHostnames, array $db): void
     {
-        $validHostname = array_filter($approveHostnames, function ($v) use ($db) {
+        $validHostname = array_filter($approvedHostnames, function ($v) use ($db) {
             return $v['host'] === $db['host'] && $v['port'] === $db['port'];
         });
 

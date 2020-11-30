@@ -47,7 +47,7 @@ class ApplicationTest extends BaseTest
         $logger->setHandlers([$testHandler]);
 
         $config = $this->config;
-        $config['image_parameters']['approveHostnames'] = [
+        $config['image_parameters']['approvedHostnames'] = [
             [
                 'host' => $this->getEnv('DB_HOST'),
                 'port' => $this->getEnv('DB_PORT'),
@@ -65,7 +65,7 @@ class ApplicationTest extends BaseTest
         $logger->setHandlers([$testHandler]);
 
         $config = $this->config;
-        $config['image_parameters']['approveHostnames'] = [
+        $config['image_parameters']['approvedHostnames'] = [
             [
                 'host' => 'InvalidHostname',
                 'port' => 12344,
