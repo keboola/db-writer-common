@@ -20,7 +20,7 @@ class Application extends Container
     {
         parent::__construct();
 
-        if (!empty($config['image_parameters']['approvedHostnames'])) {
+        if (isset($config['image_parameters']) && isset($config['image_parameters']['approvedHostnames'])) {
             $this->validateHostname(
                 $config['image_parameters']['approvedHostnames'],
                 $config['parameters']['db']
