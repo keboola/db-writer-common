@@ -20,6 +20,13 @@ class Application extends Container
     {
         parent::__construct();
 
+        if (isset($config['image_parameters']) && isset($config['image_parameters']['approvedHostnames'])) {
+            $this->validateHostname(
+                $config['image_parameters']['approvedHostnames'],
+                $config['parameters']['db']
+            );
+        }
+
         $app = $this;
 
         static::setEnvironment();
@@ -218,5 +225,22 @@ class Application extends Container
     protected function getWriterFactory(array $parameters): WriterFactory
     {
         return new WriterFactory($parameters);
+    }
+
+    private function validateHostname(array $approvedHostnames, array $db): void
+    {
+        $validHostname = array_filter($approvedHostnames, function ($v) use ($db) {
+            return $v['host'] === $db['host'] && $v['port'] === $db['port'];
+        });
+
+        if (count($validHostname) === 0) {
+            throw new UserException(
+                sprintf(
+                    'Hostname "%s" with port "%s" is not approved.',
+                    $db['host'],
+                    $db['port']
+                )
+            );
+        }
     }
 }
