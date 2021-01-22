@@ -227,7 +227,7 @@ class Application extends Container
         return new WriterFactory($parameters);
     }
 
-    private function validateHostname(array $approvedHostnames, array $db): void
+    protected function validateHostname(array $approvedHostnames, array $db): void
     {
         $validHostname = array_filter($approvedHostnames, function ($v) use ($db) {
             return $v['host'] === $db['host'] && $v['port'] === $db['port'];
