@@ -1,5 +1,5 @@
 FROM keboola/db-component-ssh-proxy:latest AS sshproxy
-FROM php:7-cli
+FROM php:7.4-cli
 
 # Env vars
 ARG DEBIAN_FRONTEND=noninteractive

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Keboola\DbWriter;
 
 use ErrorException;
-use Keboola\Csv\CsvFile;
+use Keboola\Csv\CsvReader;
 use Keboola\DbWriter\Configuration\ConfigDefinition;
 use Keboola\DbWriter\Configuration\ConfigRowDefinition;
 use Keboola\DbWriter\Configuration\Validator;
@@ -113,7 +113,7 @@ class Application extends Container
         }
     }
 
-    public function writeIncremental(CsvFile $csv, array $tableConfig): void
+    public function writeIncremental(CsvReader $csv, array $tableConfig): void
     {
         /** @var WriterInterface $writer */
         $writer = $this['writer'];
@@ -138,7 +138,7 @@ class Application extends Container
         $writer->upsert($stageTable, $tableConfig['dbName']);
     }
 
-    public function writeFull(CsvFile $csv, array $tableConfig): void
+    public function writeFull(CsvReader $csv, array $tableConfig): void
     {
         /** @var WriterInterface $writer */
         $writer = $this['writer'];
@@ -148,7 +148,7 @@ class Application extends Container
         $writer->write($csv, $tableConfig);
     }
 
-    protected function reorderColumns(CsvFile $csv, array $items): array
+    protected function reorderColumns(CsvReader $csv, array $items): array
     {
         $csv->next();
         $csvHeader = $csv->current();
@@ -166,7 +166,7 @@ class Application extends Container
         return $reordered;
     }
 
-    protected function getInputCsv(string $tableId): CsvFile
+    protected function getInputCsv(string $tableId): CsvReader
     {
         $inputMapping = $this['inputMapping'];
         if (!$inputMapping) {
@@ -185,7 +185,7 @@ class Application extends Container
 
         $filteredStorageInputMapping = array_values($filteredStorageInputMapping);
 
-        return new CsvFile(
+        return new CsvReader(
             sprintf(
                 '%s/in/tables/%s',
                 $this['parameters']['data_dir'],

@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Keboola\DbWriter\Tests\Writer;
 
-use Keboola\Csv\CsvFile;
+use Keboola\Csv\CsvReader;
+use Keboola\Csv\CsvWriter;
 use Keboola\DbWriter\Configuration\ConfigDefinition;
 use Keboola\DbWriter\Configuration\Validator;
 use Keboola\DbWriter\Test\BaseTest;
@@ -94,14 +95,14 @@ class CommonTest extends BaseTest
         $table['dbName'] .= $table['incremental']?'_temp_' . uniqid():'';
 
         $this->writer->create($table);
-        $this->writer->write(new CsvFile($sourceFilename), $table);
+        $this->writer->write(new CsvReader($sourceFilename), $table);
 
         $conn = $this->writer->getConnection();
         $stmt = $conn->query("SELECT * FROM {$table['dbName']}");
         $res = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
         $resFilename = tempnam('/tmp', 'db-wr-test-tmp');
-        $csv = new CsvFile($resFilename);
+        $csv = new CsvWriter($resFilename);
         $csv->writeRow(["col1", "col2"]);
         foreach ($res as $row) {
             $csv->writeRow($row);
@@ -122,19 +123,19 @@ class CommonTest extends BaseTest
 
         // first write
         $this->writer->create($targetTable);
-        $this->writer->write(new CsvFile($sourceFilename), $targetTable);
+        $this->writer->write(new CsvReader($sourceFilename), $targetTable);
 
         // second write
         $sourceFilename = $this->dataDir . "/in/tables/" . $table['tableId'] . "_increment.csv";
         $this->writer->create($table);
-        $this->writer->write(new CsvFile($sourceFilename), $table);
+        $this->writer->write(new CsvReader($sourceFilename), $table);
         $this->writer->upsert($table, $targetTable['dbName']);
 
         $stmt = $conn->query("SELECT * FROM {$targetTable['dbName']}");
         $res = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
         $resFilename = tempnam('/tmp', 'db-wr-test-tmp');
-        $csv = new CsvFile($resFilename);
+        $csv = new CsvWriter($resFilename);
         $csv->writeRow(["id", "name", "glasses"]);
         foreach ($res as $row) {
             $csv->writeRow($row);

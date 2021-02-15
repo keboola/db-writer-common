@@ -17,8 +17,8 @@ class ConfigDefinition implements ConfigurationInterface
      */
     public function getConfigTreeBuilder(): TreeBuilder
     {
-        $treeBuilder = new TreeBuilder();
-        $rootNode = $treeBuilder->root('parameters');
+        $treeBuilder = new TreeBuilder('parameters');
+        $rootNode = $treeBuilder->getRootNode();
 
         $rootNode
             ->children()
@@ -104,8 +104,8 @@ class ConfigDefinition implements ConfigurationInterface
 
     public function addSshNode(): NodeDefinition
     {
-        $builder = new TreeBuilder();
-        $node = $builder->root('ssh');
+        $builder = new TreeBuilder('ssh');
+        $node = $builder->getRootNode();
 
         $node
             ->children()
