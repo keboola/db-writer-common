@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Keboola\DbWriter\Test;
 
-use Keboola\DbWriter\Logger;
 use Keboola\DbWriter\WriterFactory;
 use Keboola\DbWriter\WriterInterface;
 use PHPUnit\Framework\TestCase;
@@ -26,6 +25,25 @@ class BaseTest extends TestCase
     /** @var string */
     protected $appName = 'wr-db-common-tests';
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->closeSshTunnels();
+    }
+
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+        $this->closeSshTunnels();
+    }
+
+    protected function closeSshTunnels(): void
+    {
+        # Close SSH tunnel if created
+        $process = new Process(['sh', '-c', 'pgrep ssh | xargs -r kill']);
+        $process->mustRun();
+    }
+
     protected function getConfig(?string $dataDir = null): array
     {
         $dataDir = $dataDir ?: $this->dataDir;
@@ -44,8 +62,8 @@ class BaseTest extends TestCase
     {
         $env = strtoupper($name);
         if ($required) {
-            if (false === getenv($env)) {
-                throw new \Exception($env . " environment variable must be set.");
+            if (getenv($env) === false) {
+                throw new \Exception($env . ' environment variable must be set.');
             }
         }
         return getenv($env);

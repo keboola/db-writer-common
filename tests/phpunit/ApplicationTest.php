@@ -5,13 +5,12 @@ declare(strict_types=1);
 namespace Keboola\DbWriter\Tests;
 
 use Keboola\Csv\CsvWriter;
+use Keboola\DbWriter\Exception\UserException;
 use SplFileInfo;
 use Keboola\DbWriter\Application;
 use Keboola\DbWriter\Configuration\ConfigDefinition;
 use Keboola\DbWriter\Configuration\Validator;
-use Keboola\DbWriter\Exception\UserException;
 use Keboola\DbWriter\Test\BaseTest;
-use Monolog\Handler\TestHandler;
 use Psr\Log\LoggerInterface;
 use Psr\Log\Test\TestLogger;
 
@@ -26,6 +25,7 @@ class ApplicationTest extends BaseTest
     public function setUp(): void
     {
         parent::setUp();
+
         $validate = Validator::getValidator(new ConfigDefinition());
         $this->config = $this->getConfig();
         $this->config['parameters'] = $validate($this->config['parameters']);
@@ -61,8 +61,6 @@ class ApplicationTest extends BaseTest
 
     public function testCheckHostnameFailed(): void
     {
-        $testHandler = new TestHandler();
-
         $config = $this->config;
         $config['image_parameters']['approvedHostnames'] = [
             [
@@ -104,13 +102,13 @@ class ApplicationTest extends BaseTest
         $this->runApplication($this->getApp($config, $this->logger));
 
         $this->assertCount(1, $this->logger->records);
-        $this->assertTrue($this->logger->hasInfoThatContains('/Creating SSH tunnel/ui'));
+        $this->assertTrue($this->logger->hasInfoThatContains('Creating SSH tunnel'));
     }
 
     public function testRunWithSSHException(): void
     {
         $this->expectException('Keboola\DbWriter\Exception\UserException');
-        $this->expectExceptionMessageRegExp('/Could not resolve hostname herebedragons/ui');
+        $this->expectExceptionMessage('Could not resolve hostname herebedragons');
 
         $config = $this->config;
         $config['parameters']['db']['ssh'] = [
@@ -160,11 +158,11 @@ class ApplicationTest extends BaseTest
     protected function runApplication(Application $app): void
     {
         $result = $app->run();
+        $this->assertEquals('Writer finished successfully', $result);
 
         $encodingIn = $this->dataDir . '/in/tables/encoding.csv';
         $encodingOut = $this->dbTableToCsv($app['writer']->getConnection(), 'encoding', ['col1', 'col2']);
 
-        $this->assertEquals('Writer finished successfully', $result);
         $this->assertFileExists($encodingOut->getPathname());
         $this->assertEquals(file_get_contents($encodingIn), file_get_contents($encodingOut->getPathname()));
     }

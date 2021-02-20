@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Keboola\DbWriter;
 
+use SplFileInfo;
 use ErrorException;
 use Keboola\Component\Logger\AsyncActionLogging;
 use Keboola\Component\Logger\SyncActionLogging;
@@ -19,8 +20,11 @@ use Symfony\Component\Config\Definition\ConfigurationInterface;
 
 class Application extends Container
 {
-    public function __construct(array $config, LoggerInterface $logger, ?ConfigurationInterface $configDefinition = null)
-    {
+    public function __construct(
+        array $config,
+        LoggerInterface $logger,
+        ?ConfigurationInterface $configDefinition = null
+    ) {
         parent::__construct();
 
         if (isset($config['image_parameters']) && isset($config['image_parameters']['approvedHostnames'])) {
@@ -34,7 +38,7 @@ class Application extends Container
 
         static::setEnvironment();
 
-        if ($configDefinition == null) {
+        if ($configDefinition === null) {
             if (isset($config['parameters']['tables'])) {
                 $configDefinition = new ConfigDefinition();
             } else {
@@ -101,7 +105,7 @@ class Application extends Container
             $this->runWriteTable($this['parameters']);
         }
 
-        return "Writer finished successfully";
+        return 'Writer finished successfully';
     }
 
     protected function runWriteTable(array $tableConfig): void
@@ -129,7 +133,7 @@ class Application extends Container
         }
     }
 
-    public function writeIncremental(CsvReader $csv, array $tableConfig): void
+    public function writeIncremental(SplFileInfo $csv, array $tableConfig): void
     {
         /** @var WriterInterface $writer */
         $writer = $this['writer'];
@@ -154,7 +158,7 @@ class Application extends Container
         $writer->upsert($stageTable, $tableConfig['dbName']);
     }
 
-    public function writeFull(CsvReader $csv, array $tableConfig): void
+    public function writeFull(SplFileInfo $csv, array $tableConfig): void
     {
         /** @var WriterInterface $writer */
         $writer = $this['writer'];
@@ -164,16 +168,14 @@ class Application extends Container
         $writer->write($csv, $tableConfig);
     }
 
-    protected function reorderColumns(CsvReader $csv, array $items): array
+    protected function reorderColumns(SplFileInfo $csv, array $items): array
     {
-        $csv->next();
-        $csvHeader = $csv->current();
-        $csv->rewind();
-
+        $csvReader = new CsvReader($csv->getPathname());
+        $csvHeader = $csvReader->getHeader();
         $reordered = [];
         foreach ($csvHeader as $csvCol) {
             foreach ($items as $item) {
-                if ($csvCol == $item['name']) {
+                if ($csvCol === $item['name']) {
                     $reordered[] = $item;
                 }
             }
@@ -182,7 +184,7 @@ class Application extends Container
         return $reordered;
     }
 
-    protected function getInputCsv(string $tableId): CsvReader
+    protected function getInputCsv(string $tableId): SplFileInfo
     {
         $inputMapping = $this['inputMapping'];
         if (!$inputMapping) {
@@ -201,7 +203,7 @@ class Application extends Container
 
         $filteredStorageInputMapping = array_values($filteredStorageInputMapping);
 
-        return new CsvReader(
+        return new SplFileInfo(
             sprintf(
                 '%s/in/tables/%s',
                 $this['parameters']['data_dir'],

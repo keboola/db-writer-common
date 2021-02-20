@@ -108,7 +108,7 @@ class ConfigRowApplicationTest extends BaseTest
     public function testRunWithSSHException(array $dataDefinition): void
     {
         $this->expectException('Keboola\DbWriter\Exception\UserException');
-        $this->expectExceptionMessageRegExp('/Could not resolve hostname herebedragons/ui');
+        $this->expectExceptionMessage('Could not resolve hostname herebedragons');
 
         $config = $this->getConfig($dataDefinition['datadir']);
         $config['parameters']['db']['ssh'] = [

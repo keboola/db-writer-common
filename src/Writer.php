@@ -37,9 +37,9 @@ abstract class Writer implements WriterInterface
             $this->db = $this->createConnection($this->dbParams);
         } catch (\Throwable $e) {
             if (strstr(strtolower($e->getMessage()), 'could not find driver')) {
-                throw new ApplicationException("Missing driver: " . $e->getMessage());
+                throw new ApplicationException('Missing driver: ' . $e->getMessage());
             }
-            throw new UserException("Error connecting to DB: " . $e->getMessage(), 0, $e);
+            throw new UserException('Error connecting to DB: ' . $e->getMessage(), 0, $e);
         }
     }
 
@@ -50,7 +50,7 @@ abstract class Writer implements WriterInterface
         // check params
         foreach (['keys', 'sshHost'] as $k) {
             if (empty($sshConfig[$k])) {
-                throw new UserException(sprintf("Parameter %s is missing.", $k));
+                throw new UserException(sprintf('Parameter %s is missing.', $k));
             }
         }
 
