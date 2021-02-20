@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Keboola\DbWriter\Tests;
 
-use Keboola\Csv\CsvFile;
+use SplFileInfo;
+use Keboola\Csv\CsvWriter;
 use Keboola\DbWriter\Application;
 use Keboola\DbWriter\Configuration\ConfigDefinition;
 use Keboola\DbWriter\Configuration\Validator;
@@ -201,17 +202,17 @@ class ConfigRowApplicationTest extends BaseTest
         return $result;
     }
 
-    protected function dbTableToCsv(\PDO $conn, string $tableName, array $header): CsvFile
+    protected function dbTableToCsv(\PDO $conn, string $tableName, array $header): SplFileInfo
     {
         $stmt = $conn->query("SELECT * FROM {$tableName}");
         $res = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
-        $resFilename = tempnam('/tmp', 'db-wr-test-tmp');
-        $csv = new CsvFile($resFilename);
+        $path = tempnam('/tmp', 'db-wr-test-tmp');
+        $csv = new CsvWriter($path);
         $csv->writeRow($header);
         foreach ($res as $row) {
             $csv->writeRow($row);
         }
-        return $csv;
+        return new SplFileInfo($path);
     }
 }

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Keboola\DbWriter\Tests;
 
-use Keboola\Csv\CsvFile;
+use Keboola\Csv\CsvWriter;
+use SplFileInfo;
 use Keboola\DbWriter\Application;
 use Keboola\DbWriter\Configuration\ConfigDefinition;
 use Keboola\DbWriter\Configuration\Validator;
 use Keboola\DbWriter\Exception\UserException;
-use Keboola\DbWriter\Logger;
 use Keboola\DbWriter\Test\BaseTest;
 use Monolog\Handler\TestHandler;
 use Psr\Log\LoggerInterface;
@@ -169,18 +169,18 @@ class ApplicationTest extends BaseTest
         $this->assertEquals(file_get_contents($encodingIn), file_get_contents($encodingOut->getPathname()));
     }
 
-    protected function dbTableToCsv(\PDO $conn, string $tableName, array $header): CsvFile
+    protected function dbTableToCsv(\PDO $conn, string $tableName, array $header): SplFileInfo
     {
         $stmt = $conn->query("SELECT * FROM {$tableName}");
         $res = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
-        $resFilename = tempnam('/tmp', 'db-wr-test-tmp');
-        $csv = new CsvFile($resFilename);
+        $path = tempnam('/tmp', 'db-wr-test-tmp');
+        $csv = new CsvWriter($path);
         $csv->writeRow($header);
         foreach ($res as $row) {
             $csv->writeRow($row);
         }
 
-        return $csv;
+        return new SplFileInfo($path);
     }
 }

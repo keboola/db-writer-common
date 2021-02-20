@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Keboola\DbWriter;
 
-use Keboola\Csv\CsvReader;
+use SplFileInfo;
 
 interface WriterInterface
 {
@@ -18,7 +18,7 @@ interface WriterInterface
      * @return mixed
      */
     public function createConnection(array $dbParams);
-    public function write(CsvReader $csv, array $table): void;
+    public function write(SplFileInfo $csv, array $table): void;
     public function drop(string $tableName): void;
     public function create(array $table): void;
     public function upsert(array $table, string $targetTable): void;

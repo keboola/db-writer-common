@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Keboola\DbWriter\Writer;
 
-use Keboola\Csv\CsvReader;
+use SplFileInfo;
 use Keboola\DbWriter\Exception\UserException;
 use Keboola\DbWriter\Writer;
 use Keboola\DbWriter\WriterInterface;
@@ -99,7 +99,7 @@ class Common extends Writer implements WriterInterface
         $this->db->exec($sql);
     }
 
-    public function write(CsvReader $csvFile, array $table): void
+    public function write(SplFileInfo $csvFile, array $table): void
     {
         $query = "
             LOAD DATA LOCAL INFILE '{$csvFile->getPathname()}'
