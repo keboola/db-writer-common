@@ -8,6 +8,7 @@ use Keboola\DbWriter\Logger;
 use Keboola\DbWriter\WriterFactory;
 use Keboola\DbWriter\WriterInterface;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\Test\TestLogger;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Process\Process;
 
@@ -54,7 +55,7 @@ class BaseTest extends TestCase
     {
         $writerFactory = new WriterFactory($parameters);
 
-        return $writerFactory->create(new Logger($this->appName));
+        return $writerFactory->create(new TestLogger());
     }
 
     public function getPrivateKey(): string

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Keboola\DbWriter;
 
 use ErrorException;
+use Keboola\Component\Logger\AsyncActionLogging;
+use Keboola\Component\Logger\SyncActionLogging;
 use Keboola\Csv\CsvReader;
 use Keboola\DbWriter\Configuration\ConfigDefinition;
 use Keboola\DbWriter\Configuration\ConfigRowDefinition;
@@ -12,11 +14,12 @@ use Keboola\DbWriter\Configuration\Validator;
 use Keboola\DbWriter\Exception\ApplicationException;
 use Keboola\DbWriter\Exception\UserException;
 use Pimple\Container;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 
 class Application extends Container
 {
-    public function __construct(array $config, Logger $logger, ?ConfigurationInterface $configDefinition = null)
+    public function __construct(array $config, LoggerInterface $logger, ?ConfigurationInterface $configDefinition = null)
     {
         parent::__construct();
 
@@ -47,6 +50,19 @@ class Application extends Container
         $this['writer'] = function () use ($app) {
             return $this->getWriterFactory($app['parameters'])->create($app['logger']);
         };
+
+        // Setup logger, copied from php-component/src/BaseComponent.php
+        // Will be removed in next refactoring steps,
+        // ... when Application will be replace by standard BaseComponent
+        if ($this['action'] !== 'run') { // $this->isSyncAction()
+            if ($this['logger'] instanceof SyncActionLogging) {
+                $this['logger']->setupSyncActionLogging();
+            }
+        } else {
+            if ($this['logger']instanceof AsyncActionLogging) {
+                $this['logger']->setupAsyncActionLogging();
+            }
+        }
     }
 
     public static function setEnvironment(): void

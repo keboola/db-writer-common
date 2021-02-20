@@ -15,6 +15,7 @@
     "ext-PDO": "*",
     "ext-json": "*",
     "ext-mbstring": "*",
+    "keboola/php-component": "^8.2",
     "keboola/csv": "^2.0",
     "keboola/ssh-tunnel": "^2.0",
     "monolog/monolog": "^2.0",

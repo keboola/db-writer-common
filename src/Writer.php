@@ -8,6 +8,7 @@ use Keboola\DbWriter\Exception\ApplicationException;
 use Keboola\DbWriter\Exception\UserException;
 use Keboola\SSHTunnel\SSH;
 use Keboola\SSHTunnel\SSHException;
+use Psr\Log\LoggerInterface;
 
 abstract class Writer implements WriterInterface
 {
@@ -17,13 +18,13 @@ abstract class Writer implements WriterInterface
     /** @var bool */
     protected $async = false;
 
-    /** @var Logger */
+    /** @var LoggerInterface */
     protected $logger;
 
     /** @var array */
     protected $dbParams;
 
-    public function __construct(array $dbParams, Logger $logger)
+    public function __construct(array $dbParams, LoggerInterface $logger)
     {
         $this->logger = $logger;
 

@@ -12,11 +12,16 @@ use Keboola\DbWriter\Exception\UserException;
 use Keboola\DbWriter\Logger;
 use Keboola\DbWriter\Test\BaseTest;
 use Monolog\Handler\TestHandler;
+use Psr\Log\LoggerInterface;
+use Psr\Log\Test\TestLogger;
 
 class ApplicationTest extends BaseTest
 {
     /** @var array */
     private $config;
+
+    /** @var TestLogger */
+    private $logger;
 
     public function setUp(): void
     {
@@ -32,6 +37,8 @@ class ApplicationTest extends BaseTest
         foreach ($tables as $tableName) {
             $conn->exec("DROP TABLE IF EXISTS {$tableName}");
         }
+
+        $this->logger = new TestLogger();
     }
 
     public function testRun(): void
@@ -41,11 +48,6 @@ class ApplicationTest extends BaseTest
 
     public function testCheckHostname(): void
     {
-        $testHandler = new TestHandler();
-
-        $logger = new Logger($this->appName);
-        $logger->setHandlers([$testHandler]);
-
         $config = $this->config;
         $config['image_parameters']['approvedHostnames'] = [
             [
@@ -54,15 +56,12 @@ class ApplicationTest extends BaseTest
             ],
         ];
 
-        $this->runApplication($this->getApp($config, $logger));
+        $this->runApplication($this->getApp($config, $this->logger));
     }
 
     public function testCheckHostnameFailed(): void
     {
         $testHandler = new TestHandler();
-
-        $logger = new Logger($this->appName);
-        $logger->setHandlers([$testHandler]);
 
         $config = $this->config;
         $config['image_parameters']['approvedHostnames'] = [
@@ -74,31 +73,21 @@ class ApplicationTest extends BaseTest
 
         $this->expectException(UserException::class);
         $this->expectExceptionMessage('Hostname "mysql" with port "3306" is not approved.');
-        $this->getApp($config, $logger)->run();
+        $this->getApp($config, $this->logger)->run();
     }
 
     public function testCheckHostnameFailedEmptyArray(): void
     {
-        $testHandler = new TestHandler();
-
-        $logger = new Logger($this->appName);
-        $logger->setHandlers([$testHandler]);
-
         $config = $this->config;
         $config['image_parameters']['approvedHostnames'] = [];
 
         $this->expectException(UserException::class);
         $this->expectExceptionMessage('Hostname "mysql" with port "3306" is not approved.');
-        $this->getApp($config, $logger)->run();
+        $this->getApp($config, $this->logger)->run();
     }
 
     public function testRunWithSSH(): void
     {
-        $testHandler = new TestHandler();
-
-        $logger = new Logger($this->appName);
-        $logger->setHandlers([$testHandler]);
-
         $config = $this->config;
         $config['parameters']['db']['ssh'] = [
             'enabled' => true,
@@ -112,18 +101,10 @@ class ApplicationTest extends BaseTest
             'remotePort' => '3306',
         ];
 
-        $this->runApplication($this->getApp($config, $logger));
+        $this->runApplication($this->getApp($config, $this->logger));
 
-        $records = $testHandler->getRecords();
-        $record = reset($records);
-
-        $this->assertCount(1, $testHandler->getRecords());
-
-        $this->assertArrayHasKey('message', $record);
-        $this->assertArrayHasKey('level', $record);
-
-        $this->assertEquals(Logger::INFO, $record['level']);
-        $this->assertRegExp('/Creating SSH tunnel/ui', $record['message']);
+        $this->assertCount(1, $this->logger->records);
+        $this->assertTrue($this->logger->hasInfoThatContains('/Creating SSH tunnel/ui'));
     }
 
     public function testRunWithSSHException(): void
@@ -171,9 +152,9 @@ class ApplicationTest extends BaseTest
         $this->assertContains('encoding', array_keys($resultJson['tables']));
     }
 
-    protected function getApp(array $config, ?Logger $logger = null): Application
+    protected function getApp(array $config, ?LoggerInterface $logger = null): Application
     {
-        return new Application($config, $logger ?: new Logger($this->appName));
+        return new Application($config, $logger ?: new TestLogger());
     }
 
     protected function runApplication(Application $app): void

@@ -7,17 +7,19 @@ namespace Keboola\DbWriter\Tests;
 use Keboola\Csv\CsvFile;
 use Keboola\DbWriter\Application;
 use Keboola\DbWriter\Configuration\ConfigDefinition;
-use Keboola\DbWriter\Configuration\ConfigRowDefinition;
 use Keboola\DbWriter\Configuration\Validator;
 use Keboola\DbWriter\Exception\UserException;
-use Keboola\DbWriter\Logger;
 use Keboola\DbWriter\Test\BaseTest;
-use Monolog\Handler\TestHandler;
+use Psr\Log\LoggerInterface;
+use Psr\Log\Test\TestLogger;
 
 class ConfigRowApplicationTest extends BaseTest
 {
     /** @var array */
     private $config;
+
+    /** @var TestLogger */
+    private $logger;
 
     public function setUp(): void
     {
@@ -33,6 +35,8 @@ class ConfigRowApplicationTest extends BaseTest
         foreach ($tables as $tableName) {
             $conn->exec("DROP TABLE IF EXISTS {$tableName}");
         }
+
+        $this->logger = new TestLogger();
     }
 
     public function dataDirProvider(): array
@@ -71,11 +75,6 @@ class ConfigRowApplicationTest extends BaseTest
 
     public function testRunWithSSH(): void
     {
-        $testHandler = new TestHandler();
-
-        $logger = new Logger($this->appName);
-        $logger->setHandlers([$testHandler]);
-
         $datadir = __DIR__ . '/../data/encoding';
 
         $config = $this->getConfig($datadir);
@@ -92,22 +91,14 @@ class ConfigRowApplicationTest extends BaseTest
         ];
 
         $this->runApplication(
-            $this->getApp($config, $logger),
+            $this->getApp($config, $this->logger),
             'encoding.csv',
             'encoding',
             ['col1', 'col2']
         );
 
-        $records = $testHandler->getRecords();
-        $record = reset($records);
-
-        $this->assertCount(1, $testHandler->getRecords());
-
-        $this->assertArrayHasKey('message', $record);
-        $this->assertArrayHasKey('level', $record);
-
-        $this->assertEquals(Logger::INFO, $record['level']);
-        $this->assertRegExp('/Creating SSH tunnel/ui', $record['message']);
+        $this->assertCount(1, $this->logger->records);
+        $this->assertTrue($this->logger->hasInfoThatContains('Creating SSH tunnel'));
     }
 
     /**
@@ -192,9 +183,9 @@ class ConfigRowApplicationTest extends BaseTest
         );
     }
 
-    protected function getApp(array $config, ?Logger $logger = null): Application
+    protected function getApp(array $config, ?LoggerInterface $logger = null): Application
     {
-        return new Application($config, $logger ?: new Logger($this->appName));
+        return new Application($config, $logger ?: new TestLogger());
     }
 
     protected function runApplication(Application $app, String $inputFile, String $outputTable, array $header): string
