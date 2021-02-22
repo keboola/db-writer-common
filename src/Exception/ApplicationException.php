@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Keboola\DbWriter\Exception;
 
-class ApplicationException extends \Exception
+use Keboola\CommonExceptions\ApplicationExceptionInterface;
+
+class ApplicationException extends \Exception implements ApplicationExceptionInterface
 {
     /** @var array */
     protected $data;
