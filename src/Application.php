@@ -8,7 +8,6 @@ use SplFileInfo;
 use ErrorException;
 use Keboola\Component\Logger\AsyncActionLogging;
 use Keboola\Component\Logger\SyncActionLogging;
-use Keboola\Csv\CsvReader;
 use Keboola\DbWriter\Configuration\ConfigDefinition;
 use Keboola\DbWriter\Configuration\ConfigRowDefinition;
 use Keboola\DbWriter\Configuration\Validator;
@@ -170,8 +169,17 @@ class Application extends Container
 
     protected function reorderColumns(SplFileInfo $csv, array $items): array
     {
-        $csvReader = new CsvReader($csv->getPathname());
-        $csvHeader = $csvReader->getHeader();
+        $manifestPath = $csv->getPathname() . '.manifest';
+        if (!file_exists($manifestPath)) {
+            throw new ApplicationException(sprintf('Manifest "%s" not found.', $manifestPath));
+        }
+
+        $manifest = @json_decode((string) file_get_contents($manifestPath), true);
+        if (!$manifestPath) {
+            throw new ApplicationException(sprintf('Manifest "%s" is not valid JSON.'. $manifestPath));
+        }
+
+        $csvHeader = $manifest['columns'];
         $reordered = [];
         foreach ($csvHeader as $csvCol) {
             foreach ($items as $item) {

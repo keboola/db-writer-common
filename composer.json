@@ -16,7 +16,6 @@
     "ext-json": "*",
     "ext-mbstring": "*",
     "keboola/php-component": "^8.2",
-    "keboola/csv": "^2.0",
     "keboola/ssh-tunnel": "^2.0",
     "monolog/monolog": "^2.0",
     "pimple/pimple": "^3.0",
@@ -25,6 +24,7 @@
     "symfony/process": " ^5.0"
   },
   "require-dev": {
+    "keboola/csv": "^2.0",
     "keboola/coding-standard": ">=10.0",
     "squizlabs/php_codesniffer": "^3.0",
     "phpstan/phpstan": "^0.12",
