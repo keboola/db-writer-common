@@ -4,20 +4,26 @@ declare(strict_types=1);
 
 namespace Keboola\DbWriter;
 
+use SplFileInfo;
 use ErrorException;
-use Keboola\Csv\CsvFile;
+use Keboola\Component\Logger\AsyncActionLogging;
+use Keboola\Component\Logger\SyncActionLogging;
 use Keboola\DbWriter\Configuration\ConfigDefinition;
 use Keboola\DbWriter\Configuration\ConfigRowDefinition;
 use Keboola\DbWriter\Configuration\Validator;
 use Keboola\DbWriter\Exception\ApplicationException;
 use Keboola\DbWriter\Exception\UserException;
 use Pimple\Container;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 
 class Application extends Container
 {
-    public function __construct(array $config, Logger $logger, ?ConfigurationInterface $configDefinition = null)
-    {
+    public function __construct(
+        array $config,
+        LoggerInterface $logger,
+        ?ConfigurationInterface $configDefinition = null
+    ) {
         parent::__construct();
 
         if (isset($config['image_parameters']) && isset($config['image_parameters']['approvedHostnames'])) {
@@ -31,7 +37,7 @@ class Application extends Container
 
         static::setEnvironment();
 
-        if ($configDefinition == null) {
+        if ($configDefinition === null) {
             if (isset($config['parameters']['tables'])) {
                 $configDefinition = new ConfigDefinition();
             } else {
@@ -47,6 +53,19 @@ class Application extends Container
         $this['writer'] = function () use ($app) {
             return $this->getWriterFactory($app['parameters'])->create($app['logger']);
         };
+
+        // Setup logger, copied from php-component/src/BaseComponent.php
+        // Will be removed in next refactoring steps,
+        // ... when Application will be replace by standard BaseComponent
+        if ($this['action'] !== 'run') { // $this->isSyncAction()
+            if ($this['logger'] instanceof SyncActionLogging) {
+                $this['logger']->setupSyncActionLogging();
+            }
+        } else {
+            if ($this['logger']instanceof AsyncActionLogging) {
+                $this['logger']->setupAsyncActionLogging();
+            }
+        }
     }
 
     public static function setEnvironment(): void
@@ -85,7 +104,7 @@ class Application extends Container
             $this->runWriteTable($this['parameters']);
         }
 
-        return "Writer finished successfully";
+        return 'Writer finished successfully';
     }
 
     protected function runWriteTable(array $tableConfig): void
@@ -113,7 +132,7 @@ class Application extends Container
         }
     }
 
-    public function writeIncremental(CsvFile $csv, array $tableConfig): void
+    public function writeIncremental(SplFileInfo $csv, array $tableConfig): void
     {
         /** @var WriterInterface $writer */
         $writer = $this['writer'];
@@ -138,7 +157,7 @@ class Application extends Container
         $writer->upsert($stageTable, $tableConfig['dbName']);
     }
 
-    public function writeFull(CsvFile $csv, array $tableConfig): void
+    public function writeFull(SplFileInfo $csv, array $tableConfig): void
     {
         /** @var WriterInterface $writer */
         $writer = $this['writer'];
@@ -148,16 +167,23 @@ class Application extends Container
         $writer->write($csv, $tableConfig);
     }
 
-    protected function reorderColumns(CsvFile $csv, array $items): array
+    protected function reorderColumns(SplFileInfo $csv, array $items): array
     {
-        $csv->next();
-        $csvHeader = $csv->current();
-        $csv->rewind();
+        $manifestPath = $csv->getPathname() . '.manifest';
+        if (!file_exists($manifestPath)) {
+            throw new ApplicationException(sprintf('Manifest "%s" not found.', $manifestPath));
+        }
 
+        $manifest = @json_decode((string) file_get_contents($manifestPath), true);
+        if (!$manifestPath) {
+            throw new ApplicationException(sprintf('Manifest "%s" is not valid JSON.'. $manifestPath));
+        }
+
+        $csvHeader = $manifest['columns'];
         $reordered = [];
         foreach ($csvHeader as $csvCol) {
             foreach ($items as $item) {
-                if ($csvCol == $item['name']) {
+                if ($csvCol === $item['name']) {
                     $reordered[] = $item;
                 }
             }
@@ -166,7 +192,7 @@ class Application extends Container
         return $reordered;
     }
 
-    protected function getInputCsv(string $tableId): CsvFile
+    protected function getInputCsv(string $tableId): SplFileInfo
     {
         $inputMapping = $this['inputMapping'];
         if (!$inputMapping) {
@@ -185,7 +211,7 @@ class Application extends Container
 
         $filteredStorageInputMapping = array_values($filteredStorageInputMapping);
 
-        return new CsvFile(
+        return new SplFileInfo(
             sprintf(
                 '%s/in/tables/%s',
                 $this['parameters']['data_dir'],

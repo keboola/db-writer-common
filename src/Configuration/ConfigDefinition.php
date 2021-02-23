@@ -17,8 +17,8 @@ class ConfigDefinition implements ConfigurationInterface
      */
     public function getConfigTreeBuilder(): TreeBuilder
     {
-        $treeBuilder = new TreeBuilder();
-        $rootNode = $treeBuilder->root('parameters');
+        $treeBuilder = new TreeBuilder('parameters');
+        $rootNode = $treeBuilder->getRootNode();
 
         $rootNode
             ->children()
@@ -104,8 +104,8 @@ class ConfigDefinition implements ConfigurationInterface
 
     public function addSshNode(): NodeDefinition
     {
-        $builder = new TreeBuilder();
-        $node = $builder->root('ssh');
+        $builder = new TreeBuilder('ssh');
+        $node = $builder->getRootNode();
 
         $node
             ->children()
@@ -119,14 +119,14 @@ class ConfigDefinition implements ConfigurationInterface
                 ->end()
                 ->scalarNode('sshHost')->end()
                 ->scalarNode('sshPort')
-                    ->defaultValue("22")
+                    ->defaultValue('22')
                 ->end()
                 ->scalarNode('remoteHost')
                 ->end()
                 ->scalarNode('remotePort')
                 ->end()
                 ->scalarNode('localPort')
-                    ->defaultValue("33006")
+                    ->defaultValue('33006')
                 ->end()
                 ->scalarNode('user')->end()
             ->end()

@@ -8,6 +8,7 @@ use Keboola\DbWriter\Exception\ApplicationException;
 use Keboola\DbWriter\Exception\UserException;
 use Keboola\SSHTunnel\SSH;
 use Keboola\SSHTunnel\SSHException;
+use Psr\Log\LoggerInterface;
 
 abstract class Writer implements WriterInterface
 {
@@ -17,13 +18,13 @@ abstract class Writer implements WriterInterface
     /** @var bool */
     protected $async = false;
 
-    /** @var Logger */
+    /** @var LoggerInterface */
     protected $logger;
 
     /** @var array */
     protected $dbParams;
 
-    public function __construct(array $dbParams, Logger $logger)
+    public function __construct(array $dbParams, LoggerInterface $logger)
     {
         $this->logger = $logger;
 
@@ -36,9 +37,9 @@ abstract class Writer implements WriterInterface
             $this->db = $this->createConnection($this->dbParams);
         } catch (\Throwable $e) {
             if (strstr(strtolower($e->getMessage()), 'could not find driver')) {
-                throw new ApplicationException("Missing driver: " . $e->getMessage());
+                throw new ApplicationException('Missing driver: ' . $e->getMessage());
             }
-            throw new UserException("Error connecting to DB: " . $e->getMessage(), 0, $e);
+            throw new UserException('Error connecting to DB: ' . $e->getMessage(), 0, $e);
         }
     }
 
@@ -49,7 +50,7 @@ abstract class Writer implements WriterInterface
         // check params
         foreach (['keys', 'sshHost'] as $k) {
             if (empty($sshConfig[$k])) {
-                throw new UserException(sprintf("Parameter %s is missing.", $k));
+                throw new UserException(sprintf('Parameter %s is missing.', $k));
             }
         }
 

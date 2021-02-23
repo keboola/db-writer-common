@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Keboola\DbWriter\Exception;
 
-class ApplicationException extends \Exception
+use Keboola\CommonExceptions\ApplicationExceptionInterface;
+
+class ApplicationException extends \Exception implements ApplicationExceptionInterface
 {
     /** @var array */
     protected $data;
 
-    public function __construct(string $message = "", int $code = 0, ?\Throwable $previous = null, array $data = [])
+    public function __construct(string $message = '', int $code = 0, ?\Throwable $previous = null, array $data = [])
     {
         $this->setData($data);
         parent::__construct($message, $code, $previous);
@@ -20,7 +22,7 @@ class ApplicationException extends \Exception
         $this->data = $data;
     }
 
-    public function getData() : array
+    public function getData(): array
     {
         return $this->data;
     }

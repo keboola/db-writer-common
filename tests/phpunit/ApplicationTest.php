@@ -4,23 +4,28 @@ declare(strict_types=1);
 
 namespace Keboola\DbWriter\Tests;
 
-use Keboola\Csv\CsvFile;
+use Keboola\Csv\CsvWriter;
+use Keboola\DbWriter\Exception\UserException;
+use SplFileInfo;
 use Keboola\DbWriter\Application;
 use Keboola\DbWriter\Configuration\ConfigDefinition;
 use Keboola\DbWriter\Configuration\Validator;
-use Keboola\DbWriter\Exception\UserException;
-use Keboola\DbWriter\Logger;
 use Keboola\DbWriter\Test\BaseTest;
-use Monolog\Handler\TestHandler;
+use Psr\Log\LoggerInterface;
+use Psr\Log\Test\TestLogger;
 
 class ApplicationTest extends BaseTest
 {
     /** @var array */
     private $config;
 
+    /** @var TestLogger */
+    private $logger;
+
     public function setUp(): void
     {
         parent::setUp();
+
         $validate = Validator::getValidator(new ConfigDefinition());
         $this->config = $this->getConfig();
         $this->config['parameters'] = $validate($this->config['parameters']);
@@ -32,6 +37,8 @@ class ApplicationTest extends BaseTest
         foreach ($tables as $tableName) {
             $conn->exec("DROP TABLE IF EXISTS {$tableName}");
         }
+
+        $this->logger = new TestLogger();
     }
 
     public function testRun(): void
@@ -41,11 +48,6 @@ class ApplicationTest extends BaseTest
 
     public function testCheckHostname(): void
     {
-        $testHandler = new TestHandler();
-
-        $logger = new Logger($this->appName);
-        $logger->setHandlers([$testHandler]);
-
         $config = $this->config;
         $config['image_parameters']['approvedHostnames'] = [
             [
@@ -54,16 +56,11 @@ class ApplicationTest extends BaseTest
             ],
         ];
 
-        $this->runApplication($this->getApp($config, $logger));
+        $this->runApplication($this->getApp($config, $this->logger));
     }
 
     public function testCheckHostnameFailed(): void
     {
-        $testHandler = new TestHandler();
-
-        $logger = new Logger($this->appName);
-        $logger->setHandlers([$testHandler]);
-
         $config = $this->config;
         $config['image_parameters']['approvedHostnames'] = [
             [
@@ -74,31 +71,21 @@ class ApplicationTest extends BaseTest
 
         $this->expectException(UserException::class);
         $this->expectExceptionMessage('Hostname "mysql" with port "3306" is not approved.');
-        $this->getApp($config, $logger)->run();
+        $this->getApp($config, $this->logger)->run();
     }
 
     public function testCheckHostnameFailedEmptyArray(): void
     {
-        $testHandler = new TestHandler();
-
-        $logger = new Logger($this->appName);
-        $logger->setHandlers([$testHandler]);
-
         $config = $this->config;
         $config['image_parameters']['approvedHostnames'] = [];
 
         $this->expectException(UserException::class);
         $this->expectExceptionMessage('Hostname "mysql" with port "3306" is not approved.');
-        $this->getApp($config, $logger)->run();
+        $this->getApp($config, $this->logger)->run();
     }
 
     public function testRunWithSSH(): void
     {
-        $testHandler = new TestHandler();
-
-        $logger = new Logger($this->appName);
-        $logger->setHandlers([$testHandler]);
-
         $config = $this->config;
         $config['parameters']['db']['ssh'] = [
             'enabled' => true,
@@ -112,24 +99,16 @@ class ApplicationTest extends BaseTest
             'remotePort' => '3306',
         ];
 
-        $this->runApplication($this->getApp($config, $logger));
+        $this->runApplication($this->getApp($config, $this->logger));
 
-        $records = $testHandler->getRecords();
-        $record = reset($records);
-
-        $this->assertCount(1, $testHandler->getRecords());
-
-        $this->assertArrayHasKey('message', $record);
-        $this->assertArrayHasKey('level', $record);
-
-        $this->assertEquals(Logger::INFO, $record['level']);
-        $this->assertRegExp('/Creating SSH tunnel/ui', $record['message']);
+        $this->assertCount(1, $this->logger->records);
+        $this->assertTrue($this->logger->hasInfoThatContains('Creating SSH tunnel'));
     }
 
     public function testRunWithSSHException(): void
     {
         $this->expectException('Keboola\DbWriter\Exception\UserException');
-        $this->expectExceptionMessageRegExp('/Could not resolve hostname herebedragons/ui');
+        $this->expectExceptionMessage('Could not resolve hostname herebedragons');
 
         $config = $this->config;
         $config['parameters']['db']['ssh'] = [
@@ -171,35 +150,35 @@ class ApplicationTest extends BaseTest
         $this->assertContains('encoding', array_keys($resultJson['tables']));
     }
 
-    protected function getApp(array $config, ?Logger $logger = null): Application
+    protected function getApp(array $config, ?LoggerInterface $logger = null): Application
     {
-        return new Application($config, $logger ?: new Logger($this->appName));
+        return new Application($config, $logger ?: new TestLogger());
     }
 
     protected function runApplication(Application $app): void
     {
         $result = $app->run();
+        $this->assertEquals('Writer finished successfully', $result);
 
         $encodingIn = $this->dataDir . '/in/tables/encoding.csv';
         $encodingOut = $this->dbTableToCsv($app['writer']->getConnection(), 'encoding', ['col1', 'col2']);
 
-        $this->assertEquals('Writer finished successfully', $result);
         $this->assertFileExists($encodingOut->getPathname());
         $this->assertEquals(file_get_contents($encodingIn), file_get_contents($encodingOut->getPathname()));
     }
 
-    protected function dbTableToCsv(\PDO $conn, string $tableName, array $header): CsvFile
+    protected function dbTableToCsv(\PDO $conn, string $tableName, array $header): SplFileInfo
     {
         $stmt = $conn->query("SELECT * FROM {$tableName}");
         $res = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
-        $resFilename = tempnam('/tmp', 'db-wr-test-tmp');
-        $csv = new CsvFile($resFilename);
+        $path = tempnam('/tmp', 'db-wr-test-tmp');
+        $csv = new CsvWriter($path);
         $csv->writeRow($header);
         foreach ($res as $row) {
             $csv->writeRow($row);
         }
 
-        return $csv;
+        return new SplFileInfo($path);
     }
 }

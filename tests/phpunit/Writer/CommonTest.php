@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Keboola\DbWriter\Tests\Writer;
 
-use Keboola\Csv\CsvFile;
+use SplFileInfo;
+use Keboola\Csv\CsvReader;
+use Keboola\Csv\CsvWriter;
 use Keboola\DbWriter\Configuration\ConfigDefinition;
 use Keboola\DbWriter\Configuration\Validator;
 use Keboola\DbWriter\Test\BaseTest;
@@ -39,19 +41,19 @@ class CommonTest extends BaseTest
     public function testDrop(): void
     {
         $conn = $this->writer->getConnection();
-        $conn->exec("CREATE TABLE dropMe (
+        $conn->exec('CREATE TABLE dropMe (
           id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
           firstname VARCHAR(30) NOT NULL,
-          lastname VARCHAR(30) NOT NULL)");
+          lastname VARCHAR(30) NOT NULL)');
 
-        $this->writer->drop("dropMe");
+        $this->writer->drop('dropMe');
 
-        $stmt = $conn->query(sprintf("SHOW TABLES IN `%s`", $this->config['parameters']['db']['database']));
+        $stmt = $conn->query(sprintf('SHOW TABLES IN `%s`', $this->config['parameters']['db']['database']));
         $res = $stmt->fetchAll();
 
         $tableExists = false;
         foreach ($res as $r) {
-            if ($r[0] == "dropMe") {
+            if ($r[0] === 'dropMe') {
                 $tableExists = true;
                 break;
             }
@@ -70,13 +72,13 @@ class CommonTest extends BaseTest
 
         /** @var \PDO $conn */
         $conn = $this->writer->getConnection();
-        $stmt = $conn->query(sprintf("SHOW TABLES IN `%s`", $this->config['parameters']['db']['database']));
+        $stmt = $conn->query(sprintf('SHOW TABLES IN `%s`', $this->config['parameters']['db']['database']));
         $res = $stmt->fetchAll();
 
         $tableExists = false;
 
         foreach ($res as $r) {
-            if ($r[0] == $tables[0]['dbName']) {
+            if ($r[0] === $tables[0]['dbName']) {
                 $tableExists = true;
                 break;
             }
@@ -90,19 +92,19 @@ class CommonTest extends BaseTest
         $tables = $this->config['parameters']['tables'];
 
         $table = $tables[0];
-        $sourceFilename = $this->dataDir . "/in/tables/" . $table['tableId'] . ".csv";
+        $sourceFilename = $this->dataDir . '/in/tables/' . $table['tableId'] . '.csv';
         $table['dbName'] .= $table['incremental']?'_temp_' . uniqid():'';
 
         $this->writer->create($table);
-        $this->writer->write(new CsvFile($sourceFilename), $table);
+        $this->writer->write(new SplFileInfo($sourceFilename), $table);
 
         $conn = $this->writer->getConnection();
         $stmt = $conn->query("SELECT * FROM {$table['dbName']}");
         $res = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
         $resFilename = tempnam('/tmp', 'db-wr-test-tmp');
-        $csv = new CsvFile($resFilename);
-        $csv->writeRow(["col1", "col2"]);
+        $csv = new CsvWriter($resFilename);
+        $csv->writeRow(['col1', 'col2']);
         foreach ($res as $row) {
             $csv->writeRow($row);
         }
@@ -116,31 +118,31 @@ class CommonTest extends BaseTest
         $tables = $this->config['parameters']['tables'];
 
         $table = $tables[1];
-        $sourceFilename = $this->dataDir . "/in/tables/" . $table['tableId'] . ".csv";
+        $sourceFilename = $this->dataDir . '/in/tables/' . $table['tableId'] . '.csv';
         $targetTable = $table;
         $table['dbName'] .= $table['incremental']?'_temp_' . uniqid():'';
 
         // first write
         $this->writer->create($targetTable);
-        $this->writer->write(new CsvFile($sourceFilename), $targetTable);
+        $this->writer->write(new SplFileInfo($sourceFilename), $targetTable);
 
         // second write
-        $sourceFilename = $this->dataDir . "/in/tables/" . $table['tableId'] . "_increment.csv";
+        $sourceFilename = $this->dataDir . '/in/tables/' . $table['tableId'] . '_increment.csv';
         $this->writer->create($table);
-        $this->writer->write(new CsvFile($sourceFilename), $table);
+        $this->writer->write(new SplFileInfo($sourceFilename), $table);
         $this->writer->upsert($table, $targetTable['dbName']);
 
         $stmt = $conn->query("SELECT * FROM {$targetTable['dbName']}");
         $res = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
         $resFilename = tempnam('/tmp', 'db-wr-test-tmp');
-        $csv = new CsvFile($resFilename);
-        $csv->writeRow(["id", "name", "glasses"]);
+        $csv = new CsvWriter($resFilename);
+        $csv->writeRow(['id', 'name', 'glasses']);
         foreach ($res as $row) {
             $csv->writeRow($row);
         }
 
-        $expectedFilename = $this->dataDir . "/in/tables/" . $table['tableId'] . "_merged.csv";
+        $expectedFilename = $this->dataDir . '/in/tables/' . $table['tableId'] . '_merged.csv';
 
         $this->assertFileEquals($expectedFilename, $resFilename);
     }
@@ -185,14 +187,14 @@ class CommonTest extends BaseTest
         $tableName = 'firstTable';
 
         $tmpName = $this->writer->generateTmpName($tableName);
-        $this->assertRegExp('/' . $tableName . '/ui', $tmpName);
-        $this->assertRegExp('/temp/ui', $tmpName);
+        $this->assertMatchesRegularExpression('/' . $tableName . '/ui', $tmpName);
+        $this->assertMatchesRegularExpression('/temp/ui', $tmpName);
         $this->assertLessThanOrEqual(64, mb_strlen($tmpName));
 
         $tableName = str_repeat('firstTableWithLongName', 6);
 
         $tmpName = $this->writer->generateTmpName($tableName);
-        $this->assertRegExp('/temp/ui', $tmpName);
+        $this->assertMatchesRegularExpression('/temp/ui', $tmpName);
         $this->assertLessThanOrEqual(64, mb_strlen($tmpName));
     }
 

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Keboola\DbWriter;
 
 use Keboola\DbWriter\Exception\UserException;
-use Monolog\Logger;
+use Psr\Log\LoggerInterface;
 
 class WriterFactory
 {
@@ -17,7 +17,7 @@ class WriterFactory
         $this->parameters = $parameters;
     }
 
-    public function create(Logger $logger): WriterInterface
+    public function create(LoggerInterface $logger): WriterInterface
     {
         $writerClass = __NAMESPACE__ . '\\Writer\\' . $this->parameters['writer_class'];
         if (!class_exists($writerClass)) {

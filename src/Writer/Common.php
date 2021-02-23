@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Keboola\DbWriter\Writer;
 
-use Keboola\Csv\CsvFile;
+use SplFileInfo;
 use Keboola\DbWriter\Exception\UserException;
 use Keboola\DbWriter\Writer;
 use Keboola\DbWriter\WriterInterface;
@@ -38,16 +38,16 @@ class Common extends Writer implements WriterInterface
         // check params
         foreach (['host', 'database', 'user', 'password'] as $r) {
             if (!isset($dbParams[$r])) {
-                throw new UserException(sprintf("Parameter %s is missing.", $r));
+                throw new UserException(sprintf('Parameter %s is missing.', $r));
             }
         }
 
         $port = isset($dbParams['port']) ? $dbParams['port'] : '3306';
-        $dsn = sprintf("mysql:host=%s;port=%s;dbname=%s;charset=utf8", $dbParams['host'], $port, $dbParams['database']);
+        $dsn = sprintf('mysql:host=%s;port=%s;dbname=%s;charset=utf8', $dbParams['host'], $port, $dbParams['database']);
 
         $pdo = new \PDO($dsn, $dbParams['user'], $dbParams['password'], $options);
         $pdo->setAttribute(\PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, false);
-        $pdo->exec("SET NAMES utf8;");
+        $pdo->exec('SET NAMES utf8;');
 
         return $pdo;
     }
@@ -66,7 +66,7 @@ class Common extends Writer implements WriterInterface
     public function create(array $table): void
     {
         $sql = sprintf(
-            "CREATE %s TABLE `%s` (",
+            'CREATE %s TABLE `%s` (',
             isset($table['temporary']) && $table['temporary'] === true ? 'TEMPORARY' : '',
             $table['dbName']
         );
@@ -74,7 +74,7 @@ class Common extends Writer implements WriterInterface
         $columns = $table['items'];
         foreach ($columns as $k => $col) {
             $type = strtoupper($col['type']);
-            if ($type == 'IGNORE') {
+            if ($type === 'IGNORE') {
                 continue;
             }
 
@@ -85,7 +85,7 @@ class Common extends Writer implements WriterInterface
             $null = $col['nullable'] ? 'NULL' : 'NOT NULL';
 
             $default = empty($col['default']) ? '' : $col['default'];
-            if ($type == 'TEXT') {
+            if ($type === 'TEXT') {
                 $default = '';
             }
 
@@ -94,12 +94,12 @@ class Common extends Writer implements WriterInterface
         }
 
         $sql = substr($sql, 0, -1);
-        $sql .= ") DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
+        $sql .= ') DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;';
 
         $this->db->exec($sql);
     }
 
-    public function write(CsvFile $csvFile, array $table): void
+    public function write(SplFileInfo $csvFile, array $table): void
     {
         $query = "
             LOAD DATA LOCAL INFILE '{$csvFile->getPathname()}'
@@ -114,7 +114,7 @@ class Common extends Writer implements WriterInterface
         try {
             $this->db->exec($query);
         } catch (\PDOException $e) {
-            throw new UserException("Query failed: " . $e->getMessage(), 400, $e, [
+            throw new UserException('Query failed: ' . $e->getMessage(), 400, $e, [
                 'query' => $query,
             ]);
         }
@@ -173,7 +173,10 @@ class Common extends Writer implements WriterInterface
         $tableArr = explode('.', $tableName);
         $tableName = isset($tableArr[1])?$tableArr[1]:$tableArr[0];
         $tableName = str_replace(['[',']'], '', $tableName);
-        $stmt = $this->db->query(sprintf("SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '%s'", $tableName));
+        $stmt = $this->db->query(sprintf(
+            "SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '%s'",
+            $tableName
+        ));
         $res = $stmt->fetchAll();
         return !empty($res);
     }
@@ -200,7 +203,7 @@ class Common extends Writer implements WriterInterface
 
     public function showTables(string $dbName): array
     {
-        $stmt = $this->db->query("SHOW TABLES");
+        $stmt = $this->db->query('SHOW TABLES');
         $res = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
         return array_map(function ($item) {
@@ -222,7 +225,7 @@ class Common extends Writer implements WriterInterface
             $exists = false;
             $dstDataType = null;
             foreach ($tableInfo as $dbColumn) {
-                $exists = ($dbColumn['Field'] == $column['dbName']);
+                $exists = ($dbColumn['Field'] === $column['dbName']);
                 if ($exists) {
                     $dstDataType = preg_replace('/\(.*\)/', '', $dbColumn['Type']);
                     break;
@@ -240,7 +243,8 @@ class Common extends Writer implements WriterInterface
             $srcDataType = strtolower($column['type']);
             if ($dstDataType !== $srcDataType) {
                 throw new UserException(sprintf(
-                    'Data type mismatch. Column \'%s\' is of type \'%s\' in writer, but is \'%s\' in destination table \'%s\'',
+                    'Data type mismatch. Column \'%s\' is of type \'%s\' in writer, '.
+                    'but is \'%s\' in destination table \'%s\'',
                     $column['dbName'],
                     $srcDataType,
                     $dstDataType,
