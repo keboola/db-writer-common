@@ -27,3 +27,6 @@ composer.json
     
 
     
+## License
+
+MIT licensed, see [LICENSE](./LICENSE) file.
