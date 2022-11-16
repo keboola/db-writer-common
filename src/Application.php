@@ -176,7 +176,7 @@ class Application extends Container
 
         $manifest = @json_decode((string) file_get_contents($manifestPath), true);
         if (!$manifestPath) {
-            throw new ApplicationException(sprintf('Manifest "%s" is not valid JSON.'. $manifestPath));
+            throw new ApplicationException(sprintf('Manifest "%s" is not valid JSON.', $manifestPath));
         }
 
         $csvHeader = $manifest['columns'];
