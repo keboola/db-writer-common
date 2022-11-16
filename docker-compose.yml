@@ -1,4 +1,4 @@
-version: "2"
+version: "3.8"
 services:
   tests:
     build: .
@@ -26,6 +26,7 @@ services:
       - TIMEOUT=120
 
   mysql:
+    platform: linux/x86_64
     image: mysql:5.6
     environment:
       MYSQL_DATABASE: testdb
