@@ -109,8 +109,11 @@ class ApplicationTest extends BaseTest
     public function testRunWithSSHException(): void
     {
         $this->expectException('Keboola\DbWriter\Exception\UserException');
-        $this->expectExceptionMessage('Unable to create ssh tunnel. Output:  ErrorOutput: ssh: Could not resolve ' .
-            "hostname herebedragons: Name or service not known\r\nRetries count: " . Writer::DEFAULT_MAX_TRIES);
+        $this->expectExceptionMessage(
+            'Unable to create ssh tunnel. Output:  ErrorOutput: ssh: Could not resolve ' .
+            "hostname herebedragons: Temporary failure in name resolution\r\nRetries count: " .
+            Writer::SSH_MAX_TRIES
+        );
 
         $config = $this->config;
         $config['parameters']['db']['ssh'] = [

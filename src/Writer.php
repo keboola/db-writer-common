@@ -17,7 +17,7 @@ use Throwable;
 
 abstract class Writer implements WriterInterface
 {
-    public const DEFAULT_MAX_TRIES = 5;
+    public const SSH_MAX_TRIES = 5;
 
     protected PDO $db;
 
@@ -85,8 +85,8 @@ abstract class Writer implements WriterInterface
         $this->logger->info("Creating SSH tunnel to '" . $tunnelParams['sshHost'] . "'");
 
         $simplyRetryPolicy = new SimpleRetryPolicy(
-            $sshConfig['maxRetries'] ?? self::DEFAULT_MAX_TRIES,
-            [SSHException::class,Throwable::class]
+            self::SSH_MAX_TRIES,
+            [SSHException::class, Throwable::class]
         );
 
         $exponentialBackOffPolicy = new ExponentialBackOffPolicy();
