@@ -9,9 +9,14 @@ use Keboola\DbWriter\Exception\UserException;
 use Keboola\SSHTunnel\SSH;
 use Keboola\SSHTunnel\SSHException;
 use Psr\Log\LoggerInterface;
+use Retry\BackOff\ExponentialBackOffPolicy;
+use Retry\Policy\SimpleRetryPolicy;
+use Retry\RetryProxy;
 
 abstract class Writer implements WriterInterface
 {
+    public const DEFAULT_MAX_TRIES = 5;
+
     /** @var \PDO */
     protected $db;
 
@@ -80,11 +85,25 @@ abstract class Writer implements WriterInterface
 
         $this->logger->info("Creating SSH tunnel to '" . $tunnelParams['sshHost'] . "'");
 
+        $simplyRetryPolicy = new SimpleRetryPolicy(
+            $sshConfig['maxRetries'] ?? self::DEFAULT_MAX_TRIES,
+            [SSHException::class,\Throwable::class]
+        );
+
+        $exponentialBackOffPolicy = new ExponentialBackOffPolicy();
+        $proxy = new RetryProxy(
+            $simplyRetryPolicy,
+            $exponentialBackOffPolicy,
+            $this->logger
+        );
+
         try {
-            $ssh = new SSH();
-            $ssh->openTunnel($tunnelParams);
+            $proxy->call(function () use ($tunnelParams): void {
+                $ssh = new SSH();
+                $ssh->openTunnel($tunnelParams);
+            });
         } catch (SSHException $e) {
-            throw new UserException($e->getMessage());
+            throw new UserException($e->getMessage() . 'Retries count: ' . $proxy->getTryCount() , 0, $e);
         }
 
         $dbConfig['host'] = '127.0.0.1';

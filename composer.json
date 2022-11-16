@@ -16,6 +16,7 @@
     "ext-json": "*",
     "ext-mbstring": "*",
     "keboola/php-component": "^8.2",
+    "keboola/retry": "^0.5.1",
     "keboola/ssh-tunnel": "^2.0",
     "monolog/monolog": "^2.0",
     "pimple/pimple": "^3.0",

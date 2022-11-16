@@ -6,6 +6,7 @@ namespace Keboola\DbWriter\Tests;
 
 use Keboola\Csv\CsvWriter;
 use Keboola\DbWriter\Exception\UserException;
+use Keboola\DbWriter\Writer;
 use SplFileInfo;
 use Keboola\DbWriter\Application;
 use Keboola\DbWriter\Configuration\ConfigDefinition;
@@ -108,7 +109,8 @@ class ApplicationTest extends BaseTest
     public function testRunWithSSHException(): void
     {
         $this->expectException('Keboola\DbWriter\Exception\UserException');
-        $this->expectExceptionMessage('Could not resolve hostname herebedragons');
+        $this->expectExceptionMessage('Unable to create ssh tunnel. Output:  ErrorOutput: ssh: Could not resolve ' .
+            "hostname herebedragons: Name or service not known\r\nRetries count: " . Writer::DEFAULT_MAX_TRIES);
 
         $config = $this->config;
         $config['parameters']['db']['ssh'] = [
