@@ -4,21 +4,21 @@ declare(strict_types=1);
 
 namespace Keboola\DbWriter\Tests\Writer;
 
-use SplFileInfo;
 use Keboola\Csv\CsvReader;
 use Keboola\Csv\CsvWriter;
 use Keboola\DbWriter\Configuration\ConfigDefinition;
 use Keboola\DbWriter\Configuration\Validator;
 use Keboola\DbWriter\Test\BaseTest;
 use Keboola\DbWriter\WriterInterface;
+use PDO;
+use SplFileInfo;
 
 class CommonTest extends BaseTest
 {
-    /** @var WriterInterface */
-    protected $writer;
+    protected WriterInterface $writer;
 
     /** @var array */
-    protected $config;
+    protected array $config;
 
     public function setUp(): void
     {
@@ -100,7 +100,7 @@ class CommonTest extends BaseTest
 
         $conn = $this->writer->getConnection();
         $stmt = $conn->query("SELECT * FROM {$table['dbName']}");
-        $res = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        $res = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         $resFilename = tempnam('/tmp', 'db-wr-test-tmp');
         $csv = new CsvWriter($resFilename);
@@ -133,7 +133,7 @@ class CommonTest extends BaseTest
         $this->writer->upsert($table, $targetTable['dbName']);
 
         $stmt = $conn->query("SELECT * FROM {$targetTable['dbName']}");
-        $res = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        $res = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         $resFilename = tempnam('/tmp', 'db-wr-test-tmp');
         $csv = new CsvWriter($resFilename);

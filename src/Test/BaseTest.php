@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Keboola\DbWriter\Test;
 
+use Exception;
 use Keboola\DbWriter\WriterFactory;
 use Keboola\DbWriter\WriterInterface;
 use PHPUnit\Framework\TestCase;
@@ -13,17 +14,13 @@ use Symfony\Component\Process\Process;
 
 class BaseTest extends TestCase
 {
-    /** @var string */
-    private $rootDir = __DIR__ . '/../../';
+    private string $rootDir = __DIR__ . '/../../';
 
-    /** @var string */
-    protected $dataDir = __DIR__ . '/../../tests/data/deprecated';
+    protected string $dataDir = __DIR__ . '/../../tests/data/deprecated';
 
-    /** @var string */
-    protected $tmpDataDir = '/tmp/wr-db/data';
+    protected string $tmpDataDir = '/tmp/wr-db/data';
 
-    /** @var string */
-    protected $appName = 'wr-db-common-tests';
+    protected string $appName = 'wr-db-common-tests';
 
     protected function setUp(): void
     {
@@ -63,7 +60,7 @@ class BaseTest extends TestCase
         $env = strtoupper($name);
         if ($required) {
             if (getenv($env) === false) {
-                throw new \Exception($env . ' environment variable must be set.');
+                throw new Exception($env . ' environment variable must be set.');
             }
         }
         return getenv($env);

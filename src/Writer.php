@@ -8,26 +8,25 @@ use Keboola\DbWriter\Exception\ApplicationException;
 use Keboola\DbWriter\Exception\UserException;
 use Keboola\SSHTunnel\SSH;
 use Keboola\SSHTunnel\SSHException;
+use PDO;
 use Psr\Log\LoggerInterface;
 use Retry\BackOff\ExponentialBackOffPolicy;
 use Retry\Policy\SimpleRetryPolicy;
 use Retry\RetryProxy;
+use Throwable;
 
 abstract class Writer implements WriterInterface
 {
     public const DEFAULT_MAX_TRIES = 5;
 
-    /** @var \PDO */
-    protected $db;
+    protected PDO $db;
 
-    /** @var bool */
-    protected $async = false;
+    protected bool $async = false;
 
-    /** @var LoggerInterface */
-    protected $logger;
+    protected LoggerInterface $logger;
 
     /** @var array */
-    protected $dbParams;
+    protected array $dbParams;
 
     public function __construct(array $dbParams, LoggerInterface $logger)
     {
@@ -40,7 +39,7 @@ abstract class Writer implements WriterInterface
 
         try {
             $this->db = $this->createConnection($this->dbParams);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             if (strstr(strtolower($e->getMessage()), 'could not find driver')) {
                 throw new ApplicationException('Missing driver: ' . $e->getMessage());
             }
@@ -87,7 +86,7 @@ abstract class Writer implements WriterInterface
 
         $simplyRetryPolicy = new SimpleRetryPolicy(
             $sshConfig['maxRetries'] ?? self::DEFAULT_MAX_TRIES,
-            [SSHException::class,\Throwable::class]
+            [SSHException::class,Throwable::class]
         );
 
         $exponentialBackOffPolicy = new ExponentialBackOffPolicy();
@@ -103,7 +102,7 @@ abstract class Writer implements WriterInterface
                 $ssh->openTunnel($tunnelParams);
             });
         } catch (SSHException $e) {
-            throw new UserException($e->getMessage() . 'Retries count: ' . $proxy->getTryCount() , 0, $e);
+            throw new UserException($e->getMessage() . 'Retries count: ' . $proxy->getTryCount(), 0, $e);
         }
 
         $dbConfig['host'] = '127.0.0.1';
