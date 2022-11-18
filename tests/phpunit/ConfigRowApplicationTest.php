@@ -4,23 +4,23 @@ declare(strict_types=1);
 
 namespace Keboola\DbWriter\Tests;
 
-use SplFileInfo;
 use Keboola\Csv\CsvWriter;
 use Keboola\DbWriter\Application;
 use Keboola\DbWriter\Configuration\ConfigDefinition;
 use Keboola\DbWriter\Configuration\Validator;
 use Keboola\DbWriter\Exception\UserException;
 use Keboola\DbWriter\Test\BaseTest;
+use PDO;
 use Psr\Log\LoggerInterface;
 use Psr\Log\Test\TestLogger;
+use SplFileInfo;
 
 class ConfigRowApplicationTest extends BaseTest
 {
     /** @var array */
-    private $config;
+    private array $config;
 
-    /** @var TestLogger */
-    private $logger;
+    private TestLogger $logger;
 
     public function setUp(): void
     {
@@ -202,10 +202,10 @@ class ConfigRowApplicationTest extends BaseTest
         return $result;
     }
 
-    protected function dbTableToCsv(\PDO $conn, string $tableName, array $header): SplFileInfo
+    protected function dbTableToCsv(PDO $conn, string $tableName, array $header): SplFileInfo
     {
         $stmt = $conn->query("SELECT * FROM {$tableName}");
-        $res = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        $res = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         $path = tempnam('/tmp', 'db-wr-test-tmp');
         $csv = new CsvWriter($path);

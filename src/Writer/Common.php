@@ -4,23 +4,24 @@ declare(strict_types=1);
 
 namespace Keboola\DbWriter\Writer;
 
-use SplFileInfo;
 use Keboola\DbWriter\Exception\UserException;
 use Keboola\DbWriter\Writer;
 use Keboola\DbWriter\WriterInterface;
+use PDO;
+use PDOException;
+use SplFileInfo;
 
 class Common extends Writer implements WriterInterface
 {
     /** @var array */
-    protected static $allowedTypes = [
+    protected static array $allowedTypes = [
         'int', 'smallint', 'bigint',
         'decimal', 'float', 'double',
         'date', 'datetime', 'timestamp',
         'char', 'varchar', 'text', 'blob',
     ];
 
-    /** @var \PDO */
-    protected $db;
+    protected PDO $db;
 
     /**
      * @param array $dbParams
@@ -31,8 +32,8 @@ class Common extends Writer implements WriterInterface
     {
         // convert errors to PDOExceptions
         $options = [
-            \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
-            \PDO::MYSQL_ATTR_LOCAL_INFILE => true,
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::MYSQL_ATTR_LOCAL_INFILE => true,
         ];
 
         // check params
@@ -45,8 +46,8 @@ class Common extends Writer implements WriterInterface
         $port = isset($dbParams['port']) ? $dbParams['port'] : '3306';
         $dsn = sprintf('mysql:host=%s;port=%s;dbname=%s;charset=utf8', $dbParams['host'], $port, $dbParams['database']);
 
-        $pdo = new \PDO($dsn, $dbParams['user'], $dbParams['password'], $options);
-        $pdo->setAttribute(\PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, false);
+        $pdo = new PDO($dsn, $dbParams['user'], $dbParams['password'], $options);
+        $pdo->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, false);
         $pdo->exec('SET NAMES utf8;');
 
         return $pdo;
@@ -113,7 +114,7 @@ class Common extends Writer implements WriterInterface
 
         try {
             $this->db->exec($query);
-        } catch (\PDOException $e) {
+        } catch (PDOException $e) {
             throw new UserException('Query failed: ' . $e->getMessage(), 400, $e, [
                 'query' => $query,
             ]);
@@ -204,7 +205,7 @@ class Common extends Writer implements WriterInterface
     public function showTables(string $dbName): array
     {
         $stmt = $this->db->query('SHOW TABLES');
-        $res = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        $res = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         return array_map(function ($item) {
             return array_shift($item);
@@ -214,7 +215,7 @@ class Common extends Writer implements WriterInterface
     public function getTableInfo(string $tableName): array
     {
         $stmt = $this->db->query("DESCRIBE {$tableName}");
-        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function validateTable(array $tableConfig): void

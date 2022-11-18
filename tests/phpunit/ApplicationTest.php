@@ -5,22 +5,23 @@ declare(strict_types=1);
 namespace Keboola\DbWriter\Tests;
 
 use Keboola\Csv\CsvWriter;
-use Keboola\DbWriter\Exception\UserException;
-use SplFileInfo;
 use Keboola\DbWriter\Application;
 use Keboola\DbWriter\Configuration\ConfigDefinition;
 use Keboola\DbWriter\Configuration\Validator;
+use Keboola\DbWriter\Exception\UserException;
 use Keboola\DbWriter\Test\BaseTest;
+use Keboola\DbWriter\Writer;
+use PDO;
 use Psr\Log\LoggerInterface;
 use Psr\Log\Test\TestLogger;
+use SplFileInfo;
 
 class ApplicationTest extends BaseTest
 {
     /** @var array */
-    private $config;
+    private array $config;
 
-    /** @var TestLogger */
-    private $logger;
+    private TestLogger $logger;
 
     public function setUp(): void
     {
@@ -108,7 +109,11 @@ class ApplicationTest extends BaseTest
     public function testRunWithSSHException(): void
     {
         $this->expectException('Keboola\DbWriter\Exception\UserException');
-        $this->expectExceptionMessage('Could not resolve hostname herebedragons');
+        $this->expectExceptionMessage(
+            'Unable to create ssh tunnel. Output:  ErrorOutput: ssh: Could not resolve ' .
+            "hostname herebedragons: Temporary failure in name resolution\r\nRetries count: " .
+            Writer::SSH_MAX_TRIES
+        );
 
         $config = $this->config;
         $config['parameters']['db']['ssh'] = [
@@ -167,10 +172,10 @@ class ApplicationTest extends BaseTest
         $this->assertEquals(file_get_contents($encodingIn), file_get_contents($encodingOut->getPathname()));
     }
 
-    protected function dbTableToCsv(\PDO $conn, string $tableName, array $header): SplFileInfo
+    protected function dbTableToCsv(PDO $conn, string $tableName, array $header): SplFileInfo
     {
         $stmt = $conn->query("SELECT * FROM {$tableName}");
-        $res = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        $res = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         $path = tempnam('/tmp', 'db-wr-test-tmp');
         $csv = new CsvWriter($path);

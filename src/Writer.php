@@ -8,21 +8,25 @@ use Keboola\DbWriter\Exception\ApplicationException;
 use Keboola\DbWriter\Exception\UserException;
 use Keboola\SSHTunnel\SSH;
 use Keboola\SSHTunnel\SSHException;
+use PDO;
 use Psr\Log\LoggerInterface;
+use Retry\BackOff\ExponentialBackOffPolicy;
+use Retry\Policy\SimpleRetryPolicy;
+use Retry\RetryProxy;
+use Throwable;
 
 abstract class Writer implements WriterInterface
 {
-    /** @var \PDO */
-    protected $db;
+    public const SSH_MAX_TRIES = 5;
 
-    /** @var bool */
-    protected $async = false;
+    protected PDO $db;
 
-    /** @var LoggerInterface */
-    protected $logger;
+    protected bool $async = false;
+
+    protected LoggerInterface $logger;
 
     /** @var array */
-    protected $dbParams;
+    protected array $dbParams;
 
     public function __construct(array $dbParams, LoggerInterface $logger)
     {
@@ -35,7 +39,7 @@ abstract class Writer implements WriterInterface
 
         try {
             $this->db = $this->createConnection($this->dbParams);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             if (strstr(strtolower($e->getMessage()), 'could not find driver')) {
                 throw new ApplicationException('Missing driver: ' . $e->getMessage());
             }
@@ -80,11 +84,25 @@ abstract class Writer implements WriterInterface
 
         $this->logger->info("Creating SSH tunnel to '" . $tunnelParams['sshHost'] . "'");
 
+        $simplyRetryPolicy = new SimpleRetryPolicy(
+            self::SSH_MAX_TRIES,
+            [SSHException::class, Throwable::class]
+        );
+
+        $exponentialBackOffPolicy = new ExponentialBackOffPolicy();
+        $proxy = new RetryProxy(
+            $simplyRetryPolicy,
+            $exponentialBackOffPolicy,
+            $this->logger
+        );
+
         try {
-            $ssh = new SSH();
-            $ssh->openTunnel($tunnelParams);
+            $proxy->call(function () use ($tunnelParams): void {
+                $ssh = new SSH();
+                $ssh->openTunnel($tunnelParams);
+            });
         } catch (SSHException $e) {
-            throw new UserException($e->getMessage());
+            throw new UserException($e->getMessage() . 'Retries count: ' . $proxy->getTryCount(), 0, $e);
         }
 
         $dbConfig['host'] = '127.0.0.1';

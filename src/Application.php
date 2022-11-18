@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Keboola\DbWriter;
 
-use SplFileInfo;
 use ErrorException;
 use Keboola\Component\Logger\AsyncActionLogging;
 use Keboola\Component\Logger\SyncActionLogging;
@@ -13,9 +12,12 @@ use Keboola\DbWriter\Configuration\ConfigRowDefinition;
 use Keboola\DbWriter\Configuration\Validator;
 use Keboola\DbWriter\Exception\ApplicationException;
 use Keboola\DbWriter\Exception\UserException;
+use PDOException;
 use Pimple\Container;
 use Psr\Log\LoggerInterface;
+use SplFileInfo;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
+use Throwable;
 
 class Application extends Container
 {
@@ -123,11 +125,11 @@ class Application extends Container
             } else {
                 $this->writeFull($csv, $tableConfig);
             }
-        } catch (\PDOException $e) {
+        } catch (PDOException $e) {
             throw new UserException($e->getMessage(), 0, $e);
         } catch (UserException $e) {
             throw $e;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             throw new ApplicationException($e->getMessage(), 2, $e);
         }
     }
@@ -176,7 +178,7 @@ class Application extends Container
 
         $manifest = @json_decode((string) file_get_contents($manifestPath), true);
         if (!$manifestPath) {
-            throw new ApplicationException(sprintf('Manifest "%s" is not valid JSON.'. $manifestPath));
+            throw new ApplicationException(sprintf('Manifest "%s" is not valid JSON.', $manifestPath));
         }
 
         $csvHeader = $manifest['columns'];
@@ -224,7 +226,7 @@ class Application extends Container
     {
         try {
             $this['writer']->testConnection();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             throw new UserException(sprintf("Connection failed: '%s'", $e->getMessage()), 0, $e);
         }
 

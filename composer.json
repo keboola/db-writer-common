@@ -11,11 +11,12 @@
     }
   ],
   "require": {
-    "php": "^7.1",
+    "php": "^7.4",
     "ext-PDO": "*",
     "ext-json": "*",
     "ext-mbstring": "*",
     "keboola/php-component": "^8.2",
+    "keboola/retry": "^0.5.1",
     "keboola/ssh-tunnel": "^2.0",
     "monolog/monolog": "^2.0",
     "pimple/pimple": "^3.0",
@@ -57,6 +58,9 @@
   },
   "config": {
     "sort-packages": true,
-    "optimize-autoloader": true
+    "optimize-autoloader": true,
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer":  true
+    }
   }
 }
