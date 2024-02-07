@@ -15,12 +15,7 @@ composer.json
 
 ## Development
 
-1. Generate SSH key pair for SSH proxy:
-
-        source ./tests/generate-ssh-keys.sh
-    
-2. Run tests:
-
+Run tests:
         docker-compose run --rm tests
     
 

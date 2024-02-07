@@ -1,35 +1,31 @@
 {
   "name": "keboola/db-writer-common",
   "license": "MIT",
-  "type": "project",
+  "type": "library",
   "description": "Keboola Database Writer Common Library",
   "keywords": ["keboola", "database", "db", "writer", "library"],
   "authors": [
     {
-      "name": "Miroslav Cillik",
-      "email": "miro@keboola.com"
+      "name": "Keboola",
+      "email": "devel@keboola.com"
     }
   ],
   "require": {
-    "php": "^7.4",
-    "ext-PDO": "*",
+    "php": "^8.2",
     "ext-json": "*",
-    "ext-mbstring": "*",
-    "keboola/php-component": "^8.2",
+    "ext-pdo": "*",
+    "keboola/db-writer-adapter": "dev-ondra-init-adapter",
+    "keboola/db-writer-config": "dev-ondra-init-config",
+    "keboola/php-component": "^9.4",
     "keboola/retry": "^0.5.1",
-    "keboola/ssh-tunnel": "^2.0",
-    "monolog/monolog": "^2.0",
-    "pimple/pimple": "^3.0",
-    "symfony/config": "^5.0",
-    "symfony/filesystem": "^5.0",
-    "symfony/process": " ^5.0"
+    "keboola/ssh-tunnel": "^2.0"
   },
   "require-dev": {
-    "keboola/csv": "^2.0",
-    "keboola/coding-standard": ">=10.0",
-    "squizlabs/php_codesniffer": "^3.0",
-    "phpstan/phpstan": "^0.12",
-    "phpunit/phpunit": "^9.5"
+    "keboola/coding-standard": "^15.0",
+    "keboola/csv": "^4.0",
+    "keboola/datadir-tests": "^5.6",
+    "phpstan/phpstan": "^1.10",
+    "phpunit/phpunit": "^9.6"
   },
   "autoload": {
     "psr-4": {
@@ -38,17 +34,24 @@
   },
   "autoload-dev": {
     "psr-4": {
+      "Keboola\\DbWriter\\TestsTraits\\": "tests/traits/",
+      "Keboola\\DbWriter\\TestsFunctional\\": "tests/functional/",
       "Keboola\\DbWriter\\Tests\\": "tests/phpunit/"
     }
   },
   "scripts": {
-    "tests": "phpunit",
+    "tests-phpunit": "phpunit --testsuite unit",
+    "tests-datadir": "phpunit --testsuite functional",
+    "tests": [
+      "@tests-phpunit",
+      "@tests-datadir"
+    ],
     "phpcs": "phpcs -n --ignore=vendor --extensions=php .",
     "phpcbf": "phpcbf -n --ignore=vendor --extensions=php .",
-    "phpstan": "phpstan analyse ./src ./tests --level=0 --no-progress",
+    "phpstan": "phpstan analyse ./src ./tests --level=max --no-progress -c phpstan.neon",
     "build": [
-      "@phpstan",
       "@phpcs",
+      "@phpstan",
       "@tests"
     ],
     "ci": [
