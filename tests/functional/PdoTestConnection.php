@@ -28,16 +28,17 @@ class PdoTestConnection
      */
     public static function createConnection(): PdoConnection
     {
+        $dbConfig = self::getDbConfigArray();
         return new PdoConnection(
             new NullLogger(),
             sprintf(
                 'mysql:host=%s;port=%s;dbname=%s;charset=utf8',
-                self::getDbConfigArray()['host'],
-                self::getDbConfigArray()['port'],
-                self::getDbConfigArray()['database'],
+                $dbConfig['host'],
+                $dbConfig['port'],
+                $dbConfig['database'],
             ),
-            self::getDbConfigArray()['user'],
-            self::getDbConfigArray()['#password'],
+            $dbConfig['user'],
+            $dbConfig['#password'],
             [],
         );
     }
