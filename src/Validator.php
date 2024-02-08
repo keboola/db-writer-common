@@ -43,19 +43,23 @@ readonly class Validator
     /**
      * @throws ApplicationException
      */
-    public function validateTableItems(string $tablePath, array $items): array
+    public function validateTableManifest(string $tablePath): void
     {
-        $manifestPath = $tablePath . '.manifest';
-        if (!file_exists($manifestPath)) {
-            throw new ApplicationException(sprintf('Manifest "%s" not found.', $manifestPath));
-        }
+        $manifest = $this->getTableManifest($tablePath);
 
-        $manifest = @json_decode((string) file_get_contents($manifestPath), true);
         if (!is_array($manifest)) {
-            throw new ApplicationException(sprintf('Manifest "%s" is not valid JSON.', $manifestPath));
+            throw new ApplicationException(sprintf('Manifest "%s.manifest" is not valid JSON.', $tablePath));
         }
         if (!isset($manifest['columns'])) {
-            throw new ApplicationException(sprintf('Manifest "%s" is missing "columns" key.', $manifestPath));
+            throw new ApplicationException(sprintf('Manifest "%s.manifest" is missing "columns" key.', $tablePath));
+        }
+    }
+
+    public function reorderItems(string $tablePath, array $items): array
+    {
+        $manifest = $this->getTableManifest($tablePath);
+        if (!$manifest) {
+            return $items;
         }
 
         /** @var iterable $csvHeader */
@@ -70,5 +74,20 @@ readonly class Validator
         }
 
         return $reordered;
+    }
+
+    private function getTableManifest(string $tablePath): ?array
+    {
+        $manifestPath = $tablePath . '.manifest';
+        if (!file_exists($manifestPath)) {
+            throw new ApplicationException(sprintf('Manifest "%s" not found.', $manifestPath));
+        }
+
+        $manifest = @json_decode((string) file_get_contents($manifestPath), true);
+        if (!$manifest) {
+            return null;
+        }
+
+        return (array) $manifest;
     }
 }

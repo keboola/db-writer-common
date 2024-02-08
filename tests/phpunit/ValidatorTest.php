@@ -43,7 +43,7 @@ class ValidatorTest extends TestCase
     /**
      * @dataProvider validateTableItemsProvider
      */
-    public function testValidateTableItems(array $items, array $expectedItems): void
+    public function testReorderTableItems(array $items, array $expectedItems): void
     {
         $manifest = [
             'columns' => ['test', 'test2'],
@@ -54,7 +54,7 @@ class ValidatorTest extends TestCase
         file_put_contents($file->getPathname(), json_encode($manifest));
 
         $validator = new Validator(new TestLogger());
-        $result = $validator->validateTableItems(
+        $result = $validator->reorderItems(
             substr($file->getPathname(), 0, -9),
             $items,
         );
@@ -90,7 +90,7 @@ class ValidatorTest extends TestCase
 
         $this->expectException(ApplicationException::class);
         $this->expectExceptionMessage($expectedExceptionMessage);
-        $validator->validateTableItems($tablePath, []);
+        $validator->validateTableManifest($tablePath);
     }
 
     private function getConfig(): array

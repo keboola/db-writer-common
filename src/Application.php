@@ -160,7 +160,11 @@ class Application extends BaseComponent
     protected function validateTableItems(array $table): array
     {
         $validator = $this->getValidator();
-        $table['items'] = $validator->validateTableItems($this->getInputTablePath($table['tableId']), $table['items']);
+
+        $tablePath = $this->getInputTablePath($table['tableId']);
+        $validator->validateTableManifest($tablePath);
+        $table['items'] = $validator->reorderItems($tablePath, $table['items']);
+
         return $table;
     }
 
