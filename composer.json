@@ -22,7 +22,7 @@
   },
   "require-dev": {
     "keboola/coding-standard": "^15.0",
-    "keboola/csv": "^4.0",
+    "keboola/csv": "^3.4",
     "keboola/datadir-tests": "^5.6",
     "phpstan/phpstan": "^1.10",
     "phpunit/phpunit": "^9.6"
