@@ -5,18 +5,23 @@ Common classes for creating vendor specific database writers.
 ## Installation
 Install via composer:
 
-    php composer.phar require db-writer-common
+```bash
+composer require db-writer-common
+```
 
 composer.json
-
-    {
-      "require": "db-writer-common": ^0.1
+```json
+{
+    "require": {
+      "db-writer-common": "^6.0"
     }
+}
+```
 
 ## Development
 
 Run tests:
-        docker-compose run --rm tests
-    
-
+```bash
+docker-compose run --rm tests
+```
     
