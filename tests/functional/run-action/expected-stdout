@@ -1,0 +1,7 @@
+Creating PDO connection to "mysql:host=mysql;port=3306;dbname=testdb;charset=utf8".
+Dropping table "encoding"
+Creating table "encoding"
+Data written to table "encoding".
+Dropping table "simple"
+Creating table "simple"
+Data written to table "simple".

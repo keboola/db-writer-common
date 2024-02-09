@@ -1,0 +1,23 @@
+{
+  "action": "getTablesInfo",
+  "parameters": {
+    "writer_class": "Common",
+    "data_dir": "/data",
+    "db": {
+      "driver": "mysql",
+      "host": "%env(string:COMMON_DB_HOST)%",
+      "port": "%env(string:COMMON_DB_PORT)%",
+      "database": "%env(string:COMMON_DB_DATABASE)%",
+      "user": "%env(string:COMMON_DB_USER)%",
+      "#password": "%env(string:COMMON_DB_PASSWORD)%"
+    }
+  },
+  "image_parameters": {
+    "approvedHostnames": [
+      {
+        "host": "%env(string:COMMON_DB_HOST)%",
+        "port": "%env(string:COMMON_DB_PORT)%"
+      }
+    ]
+  }
+}

@@ -1,0 +1,7 @@
+Creating PDO connection to "mysql:host=mysql;port=3306;dbname=testdb;charset=utf8".
+Dropping table "%s"
+Creating temporary table "%s"
+Data written to table "%s".
+Creating table "simple"
+Table "simple" has primary key, using upsert.
+Data upserted to table "simple".

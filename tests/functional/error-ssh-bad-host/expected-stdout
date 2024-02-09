@@ -1,0 +1,5 @@
+Creating SSH tunnel to 'unknownHost' on local port '33006'
+Unable to create ssh tunnel. Output:  ErrorOutput: ssh: Could not resolve hostname unknownhost: %s . Retrying... [1x]
+Unable to create ssh tunnel. Output:  ErrorOutput: ssh: Could not resolve hostname unknownhost: %s . Retrying... [2x]
+Unable to create ssh tunnel. Output:  ErrorOutput: ssh: Could not resolve hostname unknownhost: %s . Retrying... [3x]
+Unable to create ssh tunnel. Output:  ErrorOutput: ssh: Could not resolve hostname unknownhost: %s . Retrying... [4x]

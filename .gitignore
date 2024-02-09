@@ -3,7 +3,4 @@
 /vendor/
 /.phpunit.result.cache
 .idea/
-composer.phar
 composer.lock
-runtests.sh
-/ssh.*

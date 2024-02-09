@@ -1,40 +1,50 @@
 version: "3.8"
 services:
-  tests:
+  tests: &tests
     build: .
-    image: keboola/db-writer-common
-    command: sh -c 'composer install -n && composer ci'
     volumes:
-        - .:/code
-    working_dir: /code
+      - ssh-keys:/root/.ssh:ro
     environment:
-      DB_USER: root
-      DB_PASSWORD: somePassword
-      DB_HOST: mysql
-      DB_PORT: 3306
-      DB_DATABASE: testdb
+      COMMON_DB_USER: root
+      COMMON_DB_PASSWORD: somePassword
+      COMMON_DB_HOST: mysql
+      COMMON_DB_PORT: 3306
+      COMMON_DB_DATABASE: testdb
     depends_on:
       - sshproxy
       - mysql
+
+  dev:
+    <<: *tests
+    volumes:
+      - ./data:/data
+      - .:/code
+      - ssh-keys:/root/.ssh:ro
 
   wait:
     image: waisbrot/wait
     links:
       - mysql
+      - sshproxy
     environment:
-      - TARGETS=mysql:3306
+      - TARGETS=mysql:3306,sshproxy:22
       - TIMEOUT=120
 
   mysql:
     platform: linux/x86_64
     image: mysql:5.6
+    ports:
+      - "3306:3306"
     environment:
       MYSQL_DATABASE: testdb
       MYSQL_ROOT_PASSWORD: somePassword
 
   sshproxy:
     image: keboola/db-component-ssh-proxy:latest
-    ports:
-      - "2222:22"
+    volumes:
+      - ssh-keys:/root/.ssh
     links:
       - mysql
+
+volumes:
+  ssh-keys:

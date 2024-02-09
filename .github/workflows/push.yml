@@ -8,8 +8,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Build and run tests
         run: |
+          docker-compose build
           docker-compose run --rm wait
-          docker-compose run --rm tests
+          docker-compose run --rm tests composer ci

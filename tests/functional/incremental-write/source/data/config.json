@@ -1,0 +1,62 @@
+{
+  "parameters": {
+    "writer_class": "Common",
+    "data_dir": "/data",
+    "db": {
+      "driver": "mysql",
+      "host": "%env(string:COMMON_DB_HOST)%",
+      "port": "%env(string:COMMON_DB_PORT)%",
+      "database": "%env(string:COMMON_DB_DATABASE)%",
+      "user": "%env(string:COMMON_DB_USER)%",
+      "#password": "%env(string:COMMON_DB_PASSWORD)%"
+    },
+    "tableId": "simple",
+    "dbName": "simple",
+    "incremental": true,
+    "primaryKey": [
+      "id"
+    ],
+    "items": [
+      {
+        "name": "id",
+        "dbName": "id",
+        "type": "int",
+        "size": null,
+        "nullable": null,
+        "default": null
+      },
+      {
+        "name": "name",
+        "dbName": "name",
+        "type": "VARCHAR",
+        "size": 255,
+        "nullable": null,
+        "default": null
+      },
+      {
+        "name": "glasses",
+        "dbName": "glasses",
+        "type": "VARCHAR",
+        "size": 20,
+        "nullable": null,
+        "default": null
+      }
+    ]
+  },
+  "storage": {
+    "input": {
+      "tables": [
+        {
+          "source": "simple",
+          "destination": "simple.csv",
+          "columns": [
+            "id",
+            "name",
+            "glasses",
+            "age"
+          ]
+        }
+      ]
+    }
+  }
+}

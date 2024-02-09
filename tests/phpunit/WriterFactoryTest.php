@@ -4,27 +4,66 @@ declare(strict_types=1);
 
 namespace Keboola\DbWriter\Tests;
 
-use Keboola\DbWriter\Configuration\ConfigDefinition;
-use Keboola\DbWriter\Configuration\Validator;
-use Keboola\DbWriter\Test\BaseTest;
+use Keboola\DbWriter\Exception\UserException;
 use Keboola\DbWriter\WriterFactory;
+use Keboola\DbWriterConfig\Config;
+use Keboola\DbWriterConfig\Configuration\ActionConfigDefinition;
+use Keboola\DbWriterConfig\Configuration\ValueObject\DatabaseConfig;
+use PHPUnit\Framework\Assert;
+use PHPUnit\Framework\TestCase;
 use Psr\Log\Test\TestLogger;
 
-class WriterFactoryTest extends BaseTest
+class WriterFactoryTest extends TestCase
 {
-    public function testCreate(): void
+    public function testCreateWriterClass(): void
     {
-        $config = $this->getConfig();
-        $config['parameters']['writer_class'] = 'Common';
-
-        $validate = Validator::getValidator(
-            new ConfigDefinition()
+        $config = new Config(
+            [
+                'action' => 'testConnection',
+                'parameters' => [
+                    'data_dir' => '/data',
+                    'writer_class' => 'Common',
+                    'db' => [
+                        'host' => (string) getenv('COMMON_DB_HOST'),
+                        'port' => (int) getenv('COMMON_DB_PORT'),
+                        'database' => (string) getenv('COMMON_DB_DATABASE'),
+                        'user' => (string) getenv('COMMON_DB_USER'),
+                        '#password' => (string) getenv('COMMON_DB_PASSWORD'),
+                    ],
+                ],
+            ],
+            new ActionConfigDefinition(),
         );
-        $config['parameters'] = $validate($config['parameters']);
 
-        $writerFactory = new WriterFactory($config['parameters']);
-        $writer = $writerFactory->create(new TestLogger());
+        $writerFactory = new WriterFactory($config);
+        $writer = $writerFactory->create(new TestLogger(), DatabaseConfig::fromArray($config->getParameters()['db']));
 
-        $this->assertInstanceOf('Keboola\DbWriter\Writer\Common', $writer);
+        Assert::assertSame('Keboola\DbWriter\Writer\Common', get_class($writer));
+    }
+
+    public function testUnknownWriterClass(): void
+    {
+        $config = new Config(
+            [
+                'action' => 'testConnection',
+                'parameters' => [
+                    'data_dir' => '/data',
+                    'writer_class' => 'Unknown',
+                    'db' => [
+                        'host' => (string) getenv('COMMON_DB_HOST'),
+                        'port' => (int) getenv('COMMON_DB_PORT'),
+                        'database' => (string) getenv('COMMON_DB_DATABASE'),
+                        'user' => (string) getenv('COMMON_DB_USER'),
+                        '#password' => (string) getenv('COMMON_DB_PASSWORD'),
+                    ],
+                ],
+            ],
+            new ActionConfigDefinition(),
+        );
+
+        $writerFactory = new WriterFactory($config);
+        $this->expectException(UserException::class);
+        $this->expectExceptionMessage("Writer class 'Keboola\DbWriter\Writer\Unknown' doesn't exist");
+        $writerFactory->create(new TestLogger(), DatabaseConfig::fromArray($config->getParameters()['db']));
     }
 }

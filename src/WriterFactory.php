@@ -4,26 +4,32 @@ declare(strict_types=1);
 
 namespace Keboola\DbWriter;
 
+use Keboola\Component\Config\BaseConfig;
 use Keboola\DbWriter\Exception\UserException;
+use Keboola\DbWriter\Writer\BaseWriter;
+use Keboola\DbWriterConfig\Configuration\ValueObject\DatabaseConfig;
 use Psr\Log\LoggerInterface;
 
-class WriterFactory
+readonly class WriterFactory
 {
-    /** @var array */
-    private array $parameters;
-
-    public function __construct(array $parameters)
+    public function __construct(public BaseConfig $config)
     {
-        $this->parameters = $parameters;
     }
 
-    public function create(LoggerInterface $logger): WriterInterface
+    /**
+     * @throws UserException
+     */
+    public function create(LoggerInterface $logger, DatabaseConfig $databaseConfig): BaseWriter
     {
-        $writerClass = __NAMESPACE__ . '\\Writer\\' . $this->parameters['writer_class'];
+        $parameters = $this->config->getParameters();
+        $writerClass = __NAMESPACE__ . '\\Writer\\' . $parameters['writer_class'];
         if (!class_exists($writerClass)) {
             throw new UserException(sprintf("Writer class '%s' doesn't exist", $writerClass));
         }
 
-        return new $writerClass($this->parameters['db'], $logger);
+        /** @var BaseWriter $writer */
+        $writer = new $writerClass($databaseConfig, $logger);
+
+        return $writer;
     }
 }
