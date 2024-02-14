@@ -93,6 +93,6 @@ class SshTunnel
         $dbConfig['host'] = '127.0.0.1';
         $dbConfig['port'] = $sshConfig['localPort'];
 
-        return DatabaseConfig::fromArray($dbConfig);
+        return get_class($config)::fromArray($dbConfig);
     }
 }
