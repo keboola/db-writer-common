@@ -10,7 +10,6 @@ use Throwable;
 
 class ApplicationException extends Exception implements ApplicationExceptionInterface
 {
-    /** @var array */
     protected array $data;
 
     public function __construct(string $message = '', int $code = 0, ?Throwable $previous = null, array $data = [])
