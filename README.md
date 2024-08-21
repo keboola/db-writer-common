@@ -22,6 +22,6 @@ composer.json
 
 Run tests:
 ```bash
-docker-compose run --rm tests
+docker compose run --rm tests
 ```
     
