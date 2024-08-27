@@ -26,6 +26,9 @@ readonly class Validator
         $approvedHostnames = $config->getImageParameters()['approvedHostnames'];
         $db = $config->getParameters()['db'];
         $validHostname = array_filter($approvedHostnames, function ($v) use ($db) {
+            if (!array_key_exists('port', $v)) {
+                return $v['host'] === $db['host'];
+            }
             return $v['host'] === $db['host'] && $v['port'] === $db['port'];
         });
 
