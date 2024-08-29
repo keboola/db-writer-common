@@ -27,6 +27,33 @@ class ValidatorTest extends TestCase
         Assert::assertTrue(true);
     }
 
+    public function testValidHostnameWithoutPort(): void
+    {
+        $rawConfig = $this->getConfig();
+        unset($rawConfig['image_parameters']['approvedHostnames'][0]['port']);
+        $config = new Config($rawConfig, new ActionConfigDefinition());
+
+        $validator = new Validator(new TestLogger());
+        $validator->validateDatabaseHost($config);
+
+        Assert::assertTrue(true);
+    }
+
+    public function testInvalidHostnameWithoutPort(): void
+    {
+        $rawConfig = $this->getConfig();
+        unset($rawConfig['image_parameters']['approvedHostnames'][0]['port']);
+        $rawConfig['image_parameters']['approvedHostnames'][0]['host'] = 'wrongHost';
+
+        $config = new Config($rawConfig, new ActionConfigDefinition());
+
+        $validator = new Validator(new TestLogger());
+
+        $this->expectException(InvalidDatabaseHostException::class);
+        $this->expectExceptionMessage('Hostname "localhost" with port "3306" is not approved.');
+        $validator->validateDatabaseHost($config);
+    }
+
     /**
      * @dataProvider invalidHostnameProvider
      */
