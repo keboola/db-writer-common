@@ -18,7 +18,7 @@ class Validator
                 $processor = new Processor();
                 $processedParameters = $processor->processConfiguration(
                     $definition,
-                    [$parameters]
+                    [$parameters],
                 );
 
                 if (!empty($processedParameters['db']['#password'])) {

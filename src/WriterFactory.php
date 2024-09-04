@@ -9,7 +9,6 @@ use Psr\Log\LoggerInterface;
 
 class WriterFactory
 {
-    /** @var array */
     private array $parameters;
 
     public function __construct(array $parameters)

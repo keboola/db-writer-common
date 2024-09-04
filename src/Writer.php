@@ -25,7 +25,6 @@ abstract class Writer implements WriterInterface
 
     protected LoggerInterface $logger;
 
-    /** @var array */
     protected array $dbParams;
 
     public function __construct(array $dbParams, LoggerInterface $logger)
@@ -86,14 +85,14 @@ abstract class Writer implements WriterInterface
 
         $simplyRetryPolicy = new SimpleRetryPolicy(
             self::SSH_MAX_TRIES,
-            [SSHException::class, Throwable::class]
+            [SSHException::class, Throwable::class],
         );
 
         $exponentialBackOffPolicy = new ExponentialBackOffPolicy();
         $proxy = new RetryProxy(
             $simplyRetryPolicy,
             $exponentialBackOffPolicy,
-            $this->logger
+            $this->logger,
         );
 
         try {

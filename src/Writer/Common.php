@@ -13,7 +13,6 @@ use SplFileInfo;
 
 class Common extends Writer implements WriterInterface
 {
-    /** @var array */
     protected static array $allowedTypes = [
         'int', 'smallint', 'bigint',
         'decimal', 'float', 'double',
@@ -24,7 +23,6 @@ class Common extends Writer implements WriterInterface
     protected PDO $db;
 
     /**
-     * @param array $dbParams
      * @return mixed
      * @throws UserException
      */
@@ -69,7 +67,7 @@ class Common extends Writer implements WriterInterface
         $sql = sprintf(
             'CREATE %s TABLE `%s` (',
             isset($table['temporary']) && $table['temporary'] === true ? 'TEMPORARY' : '',
-            $table['dbName']
+            $table['dbName'],
         );
 
         $columns = $table['items'];
@@ -176,7 +174,7 @@ class Common extends Writer implements WriterInterface
         $tableName = str_replace(['[',']'], '', $tableName);
         $stmt = $this->db->query(sprintf(
             "SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '%s'",
-            $tableName
+            $tableName,
         ));
         $res = $stmt->fetchAll();
         return !empty($res);
@@ -237,7 +235,7 @@ class Common extends Writer implements WriterInterface
                 throw new UserException(sprintf(
                     'Column \'%s\' not found in destination table \'%s\'',
                     $column['dbName'],
-                    $tableConfig['dbName']
+                    $tableConfig['dbName'],
                 ));
             }
 
@@ -249,7 +247,7 @@ class Common extends Writer implements WriterInterface
                     $column['dbName'],
                     $srcDataType,
                     $dstDataType,
-                    $tableConfig['dbName']
+                    $tableConfig['dbName'],
                 ));
             }
         }

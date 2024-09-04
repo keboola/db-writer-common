@@ -31,7 +31,7 @@ class Application extends Container
         if (isset($config['image_parameters']) && isset($config['image_parameters']['approvedHostnames'])) {
             $this->validateHostname(
                 $config['image_parameters']['approvedHostnames'],
-                $config['parameters']['db']
+                $config['parameters']['db'],
             );
         }
 
@@ -207,7 +207,7 @@ class Application extends Container
 
         if (count($filteredStorageInputMapping) === 0) {
             throw new UserException(
-                sprintf('Table "%s" in storage input mapping cannot be found.', $tableId)
+                sprintf('Table "%s" in storage input mapping cannot be found.', $tableId),
             );
         }
 
@@ -217,8 +217,8 @@ class Application extends Container
             sprintf(
                 '%s/in/tables/%s',
                 $this['parameters']['data_dir'],
-                $filteredStorageInputMapping[0]['destination']
-            )
+                $filteredStorageInputMapping[0]['destination'],
+            ),
         );
     }
 
@@ -266,8 +266,8 @@ class Application extends Container
                 sprintf(
                     'Hostname "%s" with port "%s" is not approved.',
                     $db['host'],
-                    $db['port']
-                )
+                    $db['port'],
+                ),
             );
         }
     }

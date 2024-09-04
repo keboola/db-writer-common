@@ -17,7 +17,6 @@ use SplFileInfo;
 
 class ConfigRowApplicationTest extends BaseTest
 {
-    /** @var array */
     private array $config;
 
     private TestLogger $logger;
@@ -70,7 +69,7 @@ class ConfigRowApplicationTest extends BaseTest
             $this->getApp($this->getConfig($dataDefinition['datadir'])),
             $dataDefinition['inputFile'],
             $dataDefinition['outputTable'],
-            $dataDefinition['header']
+            $dataDefinition['header'],
         );
     }
 
@@ -95,7 +94,7 @@ class ConfigRowApplicationTest extends BaseTest
             $this->getApp($config, $this->logger),
             'encoding.csv',
             'encoding',
-            ['col1', 'col2']
+            ['col1', 'col2'],
         );
 
         $this->assertCount(1, $this->logger->records);
@@ -128,7 +127,6 @@ class ConfigRowApplicationTest extends BaseTest
 
     /**
      * @dataProvider dataDirProvider
-     * @param array $dataDefinition
      */
     public function testRunReorderColumns(array $dataDefinition): void
     {
@@ -144,13 +142,12 @@ class ConfigRowApplicationTest extends BaseTest
             $this->getApp($this->config),
             $dataDefinition['inputFile'],
             $dataDefinition['outputTable'],
-            $dataDefinition['header']
+            $dataDefinition['header'],
         );
     }
 
     /**
      * @dataProvider dataDirProvider
-     * @param array $dataDefinition
      */
     public function testGetTablesInfo(array $dataDefinition): void
     {
@@ -158,7 +155,7 @@ class ConfigRowApplicationTest extends BaseTest
             $this->getApp($this->config),
             $dataDefinition['inputFile'],
             $dataDefinition['outputTable'],
-            $dataDefinition['header']
+            $dataDefinition['header'],
         );
 
         $config = $this->config;
@@ -180,7 +177,7 @@ class ConfigRowApplicationTest extends BaseTest
             $this->getApp($config),
             'encoding.csv',
             'encoding',
-            ['col1', 'col2']
+            ['col1', 'col2'],
         );
     }
 

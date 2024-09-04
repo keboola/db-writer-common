@@ -17,7 +17,6 @@ class CommonTest extends BaseTest
 {
     protected WriterInterface $writer;
 
-    /** @var array */
     protected array $config;
 
     public function setUp(): void

@@ -14,7 +14,6 @@ interface WriterInterface
     public function getConnection();
 
     /**
-     * @param array $dbParams
      * @return mixed
      */
     public function createConnection(array $dbParams);
