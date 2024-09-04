@@ -18,7 +18,6 @@ use SplFileInfo;
 
 class ApplicationTest extends BaseTest
 {
-    /** @var array */
     private array $config;
 
     private TestLogger $logger;
@@ -112,7 +111,7 @@ class ApplicationTest extends BaseTest
         $this->expectExceptionMessage(
             'Unable to create ssh tunnel. Output:  ErrorOutput: ssh: Could not resolve ' .
             "hostname herebedragons: Temporary failure in name resolution\r\nRetries count: " .
-            Writer::SSH_MAX_TRIES
+            Writer::SSH_MAX_TRIES,
         );
 
         $config = $this->config;

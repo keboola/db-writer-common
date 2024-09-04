@@ -18,7 +18,7 @@ class WriterFactoryTest extends BaseTest
         $config['parameters']['writer_class'] = 'Common';
 
         $validate = Validator::getValidator(
-            new ConfigDefinition()
+            new ConfigDefinition(),
         );
         $config['parameters'] = $validate($config['parameters']);
 
