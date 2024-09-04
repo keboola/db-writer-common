@@ -258,6 +258,9 @@ class Application extends Container
     protected function validateHostname(array $approvedHostnames, array $db): void
     {
         $validHostname = array_filter($approvedHostnames, function ($v) use ($db) {
+            if (!array_key_exists('port', $v)) {
+                return $v['host'] === $db['host'];
+            }
             return $v['host'] === $db['host'] && $v['port'] === $db['port'];
         });
 
