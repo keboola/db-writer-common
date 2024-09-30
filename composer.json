@@ -14,8 +14,8 @@
     "php": "^8.2",
     "ext-json": "*",
     "ext-pdo": "*",
-    "keboola/db-writer-adapter": "^0.1.0",
-    "keboola/db-writer-config": "^0.1.0",
+    "keboola/db-writer-adapter": "^0.1",
+    "keboola/db-writer-config": "^0.1",
     "keboola/php-component": "^9.4",
     "keboola/retry": "^0.5.1",
     "keboola/ssh-tunnel": "^2.0"
