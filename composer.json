@@ -60,6 +60,7 @@
     ]
   },
   "config": {
+    "lock": false,
     "sort-packages": true,
     "optimize-autoloader": true,
     "allow-plugins": {

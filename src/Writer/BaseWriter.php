@@ -19,14 +19,10 @@ abstract class BaseWriter
 
     protected WriteAdapter $adapter;
 
-    /**
-     * @throws UserException|SshException|PropertyNotSetException
-     */
     public function __construct(
         DatabaseConfig $databaseConfig,
         readonly protected LoggerInterface $logger,
     ) {
-        $databaseConfig = $this->createSshTunnel($databaseConfig);
         $this->connection = $this->createConnection($databaseConfig);
         $this->adapter = $this->createWriteAdapter();
     }
