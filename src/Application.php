@@ -8,6 +8,7 @@ use Keboola\Component\BaseComponent;
 use Keboola\DbWriter\Exception\ApplicationException;
 use Keboola\DbWriter\Exception\InvalidDatabaseHostException;
 use Keboola\DbWriter\Exception\UserException;
+use Keboola\DbWriter\Writer\SshTunnel;
 use Keboola\DbWriterConfig\Configuration\ActionConfigDefinition;
 use Keboola\DbWriterConfig\Configuration\ConfigDefinition;
 use Keboola\DbWriterConfig\Configuration\ConfigRowDefinition;
@@ -20,6 +21,8 @@ class Application extends BaseComponent
 {
 
     protected string $writerName = 'Common';
+
+    private ?DatabaseConfig $databaseConfig = null;
 
     /**
      * @throws InvalidDatabaseHostException
@@ -119,7 +122,12 @@ class Application extends BaseComponent
 
     protected function createDatabaseConfig(array $dbParams): DatabaseConfig
     {
-        return DatabaseConfig::fromArray($dbParams);
+        if (!$this->databaseConfig) {
+            $sshTunnel = new SshTunnel($this->getLogger());
+            $this->databaseConfig = $sshTunnel->createSshTunnel(DatabaseConfig::fromArray($dbParams));
+        }
+
+        return $this->databaseConfig;
     }
 
     protected function getSyncActions(): array
