@@ -7,11 +7,13 @@ namespace Keboola\DbWriter\Writer;
 use Keboola\DbWriter\Exception\SshException;
 use Keboola\DbWriter\Exception\UserException;
 use Keboola\DbWriterAdapter\Connection\Connection;
+use Keboola\DbWriterAdapter\DescriptionWriteAdapter;
 use Keboola\DbWriterAdapter\WriteAdapter;
 use Keboola\DbWriterConfig\Configuration\ValueObject\DatabaseConfig;
 use Keboola\DbWriterConfig\Configuration\ValueObject\ExportConfig;
 use Keboola\DbWriterConfig\Exception\PropertyNotSetException;
 use Psr\Log\LoggerInterface;
+use Throwable;
 
 abstract class BaseWriter
 {
@@ -38,6 +40,7 @@ abstract class BaseWriter
         } else {
             $this->writeFull($exportConfig);
         }
+        $this->propagateDescriptions($exportConfig);
     }
 
     public function testConnection(): void
@@ -94,6 +97,32 @@ abstract class BaseWriter
             $exportConfig->hasPrimaryKey() ? $exportConfig->getPrimaryKey() : null,
         );
         $this->adapter->writeData($exportConfig->getDbName(), $exportConfig);
+    }
+
+    protected function propagateDescriptions(ExportConfig $exportConfig): void
+    {
+        if (!$this->adapter instanceof DescriptionWriteAdapter || !$exportConfig->shouldPropagateDescriptions()) {
+            return;
+        }
+
+        try {
+            $descriptions = $this->createTableDescriptionsReader()->read($exportConfig);
+            if ($descriptions->isEmpty()) {
+                return;
+            }
+            $this->adapter->applyDescriptions($exportConfig->getDbName(), $descriptions);
+        } catch (Throwable $e) {
+            $this->logger->warning(sprintf(
+                'Descriptions were not written to table "%s": %s',
+                $exportConfig->getDbName(),
+                $e->getMessage(),
+            ));
+        }
+    }
+
+    protected function createTableDescriptionsReader(): TableDescriptionsReader
+    {
+        return new TableDescriptionsReader();
     }
 
     /**
