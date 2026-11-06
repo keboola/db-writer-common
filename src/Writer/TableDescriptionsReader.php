@@ -18,7 +18,7 @@ class TableDescriptionsReader
     {
         $manifest = $this->readManifest($exportConfig->getTableFilePath() . '.manifest');
         if ($manifest === null) {
-            return new TableDescriptions();
+            return new TableDescriptions(null, []);
         }
 
         $tableDescription = $this->nonEmptyString($manifest['description'] ?? null);
